@@ -2,6 +2,16 @@ import numpy as np
 import mpmath as mp
 import scipy.special
 
+class VlasovException(Exception):
+    """
+    Exception for the vlasov solver package.
+    """
+    def __init__(self, msg):
+        self.msg = msg
+    def __str__(self):
+        return self.msg
+
+
 c_arr = np.array([
 2.237687789201900 - 1.625940856173727j,
 -2.237687789201900 - 1.625940856173727j,
