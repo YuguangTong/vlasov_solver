@@ -11,6 +11,13 @@ class VlasovException(Exception):
     def __str__(self):
         return self.msg
 
+emass = 9.10938291e-31
+pmass = 1.67262178e-27
+echarge = 1.60217657e-19
+permittivity = 8.854187817e-12
+permeability = 4 * np.pi * 1e-7
+cspeed = 299792458
+boltzmann = 1.3806488e-23
 
 c_arr = np.array([
 2.237687789201900 - 1.625940856173727j,
