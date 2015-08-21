@@ -80,3 +80,17 @@ def zp_mp(z):
     'import mpmath' and 'mpmath.mp.dps=n' set the precison to n digit.
     """
     return -mp.sqrt(mp.pi) * mp.exp(-z**2) * mp.erfi(z) + mp.mpc(0, 1) * mp.sqrt(mp.pi) * mp.exp(-z**2)
+
+def real_imag(val):
+    """
+    Return the list [real(val), imag(val)]
+    
+    """
+    return [np.real(val), np.imag(val)]
+
+def list_to_complex(x):
+    """
+    Convert a list of two numbers to a complex number:
+    x -> x[0] + x[1] * j
+    """
+    return x[0] + x[1] * 1j

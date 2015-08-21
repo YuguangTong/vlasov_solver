@@ -1,8 +1,8 @@
 from .util import zp, pade, zp_mp, VlasovException
+from .util import (pmass, emass, echarge, permittivity, permeability, cspeed, boltzmann)
 import numpy as np
 import scipy.special
-
-cspeed = 299792458 #(m/s)
+from scipy import linalg
 
 def f_zeta(w, kz, vz, Omega, vthz, n):
     """
@@ -182,4 +182,49 @@ def f_d(param):
     nz = kz * cspeed/ w
     nx = kp * cspeed/ w
     return f_epsilon(param) + np.array([[-nz**2, 0, nx*nz], [0, -nx**2-nz**2, 0], [nz*nx, 0, -nx**2]])
+
+def dt_wrapper(wrel, kperp, kpar, betap, tetp = 1, method = 'pade', n=10, aol=1/5000):
+    """
+    Wrapper for dispersion tensor whose input are dimensionless parameters.
+    Assume that there are only protons and electrons.
+    No temperature anisotropy or bulk drifts. 
+    
+    Keyword arguments
+    -----------------
+    kperp: k * rho_perp
+    kpar: k * rho_parallel
+    betap: proton plasma beta
+    tetp: electron proton temperature ratio 
+    aol: va/c, where c = lightspeed.
+    
+    Return
+    ------
+    determinant of dispersion tensor
+    
+    """
+    # by default add over 10 terms
+    b0 = 1e-8      # 10nT by default
+    vz = 0         # no bulk drift
+    va = cspeed * aol
+    nproton = (b0/va)**2 / (permeability * pmass)
+    tp = betap * b0**2 / (2 * permeability * nproton * boltzmann)
+    te = tp * tetp
+    wpp = np.sqrt(nproton * echarge**2 / (pmass * permittivity))
+    wpe = np.sqrt(nproton * echarge**2 / (emass * permittivity))
+    omega_p = echarge * b0/ pmass # proton gyro-freqeuncy
+    omega_e = -echarge * b0/emass
+    vthp = np.sqrt(2 * boltzmann * tp/pmass) # proton thermal speed
+    vthe = np.sqrt(2 * boltzmann * te/emass) # proton thermal speed
+    rhop = vthp/omega_p # proton gyroradius
+    w = wrel * omega_p
+    kz = kpar/rhop
+    kp = kperp/rhop
+    vthz = vthp # assume no temperature anisotropy
+    
+    proton = [n, w, kz, kp, wpp, tp, tp, vthp, vthp, omega_p, 0, method]
+    electron = [n, w, kz, kp, wpe, te, te, vthe, vthe, omega_e, 0, method]
+    
+    inp = [proton, electron]
+    param = list(map(list, zip(*inp)))
+    return linalg.det(f_d(param))*1e-40    
 
