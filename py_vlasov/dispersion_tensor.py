@@ -183,7 +183,7 @@ def f_d(param):
     nx = kp * cspeed/ w
     return f_epsilon(param) + np.array([[-nz**2, 0, nx*nz], [0, -nx**2-nz**2, 0], [nz*nx, 0, -nx**2]])
 
-def dt_wrapper(wrel, kperp, kpar, betap, tetp = 1, method = 'pade', n=10, aol=1/5000):
+def dt_wrapper(wrel, kperp, kpar, betap, tetp = 1, method = 'pade', mratio=1836, n=10, aol=1/5000):
     """
     Wrapper for dispersion tensor whose input are dimensionless parameters.
     Assume that there are only protons and electrons.
@@ -202,6 +202,12 @@ def dt_wrapper(wrel, kperp, kpar, betap, tetp = 1, method = 'pade', n=10, aol=1/
     determinant of dispersion tensor
     
     """
+
+    if mratio == 1836:
+        emass_local = emass
+    else:
+        emass_local = pmass/mratio
+        
     # by default add over 10 terms
     b0 = 1e-8      # 10nT by default
     vz = 0         # no bulk drift
@@ -210,11 +216,11 @@ def dt_wrapper(wrel, kperp, kpar, betap, tetp = 1, method = 'pade', n=10, aol=1/
     tp = betap * b0**2 / (2 * permeability * nproton * boltzmann)
     te = tp * tetp
     wpp = np.sqrt(nproton * echarge**2 / (pmass * permittivity))
-    wpe = np.sqrt(nproton * echarge**2 / (emass * permittivity))
+    wpe = np.sqrt(nproton * echarge**2 / (emass_local * permittivity))
     omega_p = echarge * b0/ pmass # proton gyro-freqeuncy
-    omega_e = -echarge * b0/emass
+    omega_e = -echarge * b0/emass_local
     vthp = np.sqrt(2 * boltzmann * tp/pmass) # proton thermal speed
-    vthe = np.sqrt(2 * boltzmann * te/emass) # proton thermal speed
+    vthe = np.sqrt(2 * boltzmann * te/emass_local) # proton thermal speed
     rhop = vthp/omega_p # proton gyroradius
     w = wrel * omega_p
     kz = kpar/rhop
