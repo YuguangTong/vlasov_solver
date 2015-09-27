@@ -166,14 +166,26 @@ def transport_ratios(inp, print_result = False):
         sigma_c += [sigma_c_j]
 
     if print_result:
-        print('polarization alpha = {0}'.format(alpha))
-        print('p_e_b0 = {0}'.format(p_e_b0))
-        print('p_b_b0 = {0}'.format(p_b_b0))
-        print('p_b_k = {0}'.format(p_b_k))
-        print('helicy = {0}'.format(sigma))
-        print('E_L/E_tot = {0}'.format(e_l_tot))
-        print('compressibility = {0}'.format(c_bn))
-        print('parallel compressibility = {0}'.format(c_par))
-        print('cross helicty = {0}'.format(sigma_c))
+        np.set_printoptions(precision=2)
+        print('eigen E = {0}'.format(alpha))
+        print('p_e_b0 = {0:.2g}'.format(p_e_b0))
+        print('p_b_b0 = {0:.2g}'.format(p_b_b0))
+        print('p_b_k = {0:.2g}'.format(p_b_k))
+        print('helicy = {0:.2g}'.format(sigma))
+        print('E_L/E_tot = {0:.2g}'.format(e_l_tot))
+        print('compressibility = {0}'.format(np.array(c_bn)))
+        print('parallel compressibility = {0}'.format(np.array(c_par)))
+        print('cross helicty = {0}'.format(np.array(sigma_c)))
         
-    return [[alpha, p_e_b0, p_b_b0, p_b_k], sigma, epsilon_b, c_bb, e_l_tot, [c_bn, c_par, ra, sigma_c]]
+    #return [[alpha, p_e_b0, p_b_b0, p_b_k], sigma, epsilon_b, c_bb, e_l_tot, [c_bn, c_par, ra, sigma_c]]
+    return {'kvec':kvec,
+            'eigen_e': alpha,
+            'p_e_b0': p_e_b0,
+            'p_b_b0': p_b_b0,
+            'p_b_k': p_b_k,
+            'helicity': sigma,
+            'e_l_tot': e_l_tot,
+            'compressibility': c_bn,
+            'parallel_compressibility': c_par,
+            'alfven_ratio': ra,
+            'cross_helicity': sigma_c}

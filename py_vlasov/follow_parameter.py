@@ -154,3 +154,58 @@ def change_k(seed_freq, param, target_k, num_step, follow_k_fn=simple_follow_fn,
         plt.title(r'Change $k\rho_p$ from {0} to {1}'.format(seed_k, target_k))
         plt.show()
     return result[-1]
+
+def change_tetp(seed_freq, param, target_tetp, num_step, follow_k_fn=simple_follow_fn, step_method = 'log',  show_plot=True):
+    """
+    Follow the solution and incrementally change angles to the target_angle.
+    
+    Parameters
+    ----------
+    freq: w/proton_gyro_frequency
+    param: list (k, theta, beta, te/tp, method, mratio, n, aol)
+    target_angle: target propogation angle
+    num_step: number of steps
+    follow_beta_fn: how to follow from one beta to another beta
+    show_plot: whether to show a plot of intermediate steps
+
+    Return
+    ------
+    freq at the target angle
+    """
+    k, theta, beta, seed_tetp, method, mass_ratio, n, aol = param
+    start = seed_tetp
+    stop = target_tetp
+    if step_method == 'log':
+        tetp_list = np.logspace(np.log10(start), np.log10(stop), num_step, endpoint=True)
+    else:
+        tetp_list = np.linspace(start, stop, num_step, endpoint=True)
+    theta = theta * np.pi/180
+    kz = k * np.cos(theta)
+    kp = k * np.sin(theta)
+    result = [seed_freq]
+    for i in list(range(num_step))[1:]:
+        tetp = tetp_list[i]
+        prev_tetp = tetp_list[i-1]
+        prev_result = result[-1]
+        guess = follow_k_fn(prev_result, prev_tetp, tetp)
+        f = lambda wrel: real_imag(dt_wrapper(wrel[0] + 1j * wrel[1], kp, kz, beta, tetp, 'numpy', mass_ratio, n, aol))
+        freq = scipy.optimize.fsolve(f, real_imag(guess))
+        result += [list_to_complex(freq)]
+
+    if show_plot:
+        plt.plot(tetp_list, np.real(result), 'o-', markersize= 2)
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.xlabel(r'$T_e/T_p$')
+        plt.ylabel(r'$\omega/\Omega_{ci}$')
+        plt.title(r'Change $T_e/T_p$ from {0} to {1}'.format(start, stop))
+        plt.show()
+
+        plt.plot(tetp_list, np.imag(result), 'o-', markersize= 2)
+        plt.xscale('log')
+        #plt.yscale('log')
+        plt.xlabel(r'$T_e/T_p$')
+        plt.ylabel(r'$\gamma/\Omega_{ci}$')
+        plt.title(r'Change $T_e/T_p$ from {0} to {1}'.format(start, stop))
+        plt.show()
+    return result[-1]
