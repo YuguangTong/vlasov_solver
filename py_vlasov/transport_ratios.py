@@ -171,6 +171,7 @@ def transport_ratios(inp, print_result = False):
         print('p_e_b0 = {0:.2g}'.format(p_e_b0))
         print('p_b_b0 = {0:.2g}'.format(p_b_b0))
         print('p_b_k = {0:.2g}'.format(p_b_k))
+        print('c_bb = {0:.2g}'.format(c_bb))
         print('helicy = {0:.2g}'.format(sigma))
         print('E_L/E_tot = {0:.2g}'.format(e_l_tot))
         print('compressibility = {0}'.format(np.array(c_bn)))
@@ -184,6 +185,7 @@ def transport_ratios(inp, print_result = False):
             'p_b_b0': p_b_b0,
             'p_b_k': p_b_k,
             'helicity': sigma,
+            'c_bb': c_bb,
             'e_l_tot': e_l_tot,
             'compressibility': c_bn,
             'parallel_compressibility': c_par,
