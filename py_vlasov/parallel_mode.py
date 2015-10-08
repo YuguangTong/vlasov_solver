@@ -73,7 +73,7 @@ def r_wave_rhs(n, w, kz, kp, wp, tz, tp, vthz, vthp, Omega, vz, method = 'pade')
     f_zp = choose_zp_fn(method)
     zeta = f_zeta(w, kz, vz, Omega, vthz, -1)
     term_3 = f_zp(zeta)
-    rhs = (wp/w)**2 * (term_1 + term_2 * term_3)
+    rhs = wp**2 * (term_1 + term_2 * term_3)
     return rhs
 
 def l_wave_rhs(n, w, kz, kp, wp, tz, tp, vthz, vthp, Omega, vz, method = 'pade'):
@@ -99,11 +99,11 @@ def l_wave_rhs(n, w, kz, kp, wp, tz, tp, vthz, vthp, Omega, vz, method = 'pade')
     Eq (3) yields L wave.
     """
     term_1 = (tp-tz)/tz
-    term_2 = ((w - kz*vz - Omega)*tp - Omega*tz)/(kz * vthz * tz)
+    term_2 = ((w - kz*vz - Omega)*tp + Omega*tz)/(kz * vthz * tz)
     f_zp = choose_zp_fn(method)
     zeta = f_zeta(w, kz, vz, Omega, vthz, 1)
     term_3 = f_zp(zeta)
-    rhs = (wp/w)**2 * (term_1 + term_2 * term_3)
+    rhs = wp**2 * (term_1 + term_2 * term_3)
     return rhs
 
 def static_rhs(n, w, kz, kp, wp, tz, tp, vthz, vthp, Omega, vz, method = 'pade'):
@@ -148,8 +148,7 @@ def r_wave_eqn(param):
     """
     w = param[1][0]
     kz = param[2][0]
-    nz = kz * cspeed/ w
-    return 1 + np.sum(np.array(list(map(r_wave_rhs, *param))), axis = 0) - nz**2
+    return w**2 + np.sum(np.array(list(map(r_wave_rhs, *param))), axis = 0) - (kz * cspeed)**2
 
 def l_wave_eqn(param):
     """
@@ -163,8 +162,7 @@ def l_wave_eqn(param):
     """
     w = param[1][0]
     kz = param[2][0]
-    nz = kz * cspeed/ w
-    return 1 + np.sum(np.array(list(map(l_wave_rhs, *param))), axis = 0) - nz**2
+    return w**2 + np.sum(np.array(list(map(l_wave_rhs, *param))), axis = 0) - (kz * cspeed)**2
 
 def static_wave_eqn(param):
     """
@@ -178,8 +176,8 @@ def static_wave_eqn(param):
     """
     return 1 + np.sum(np.array(list(map(static_rhs, *param))), axis = 0)
 
-def parallel_em_wave_wrapper_1(wrel, k, betap, t_list, a_list, n_list, q_list,
-                             m_list, v_list, method = 'pade', aol=1/5000):
+def parallel_em_wave_wrapper(wrel, k, betap, t_list, a_list, n_list, q_list,
+                             m_list, v_list, method = 'pade', aol=1/5000, mode='r'):
     """
     A more systematic way to consider multiple component plasmas.
     Assume that THE FIRST COMPONENT IS ALWAYS PROTON.
@@ -203,7 +201,8 @@ def parallel_em_wave_wrapper_1(wrel, k, betap, t_list, a_list, n_list, q_list,
         m_s \equiv m_s/m_p, m_p --> proton mass.
     v_list: dimensionless bulk drift.
         v_{ds} = v_{ds}/v_A, where v_A --> Alfven speed
-    
+    mode: one of 'r', 'l', 's', stands for right-handed (EM).
+        left-handed, and electrostatic.
     """
     b0 = 1e-8 # 10nT by default
     va = cspeed * aol # Alfven speed
@@ -233,6 +232,11 @@ def parallel_em_wave_wrapper_1(wrel, k, betap, t_list, a_list, n_list, q_list,
         inp += [species]
         
     param = list(map(list, zip(*inp)))
-    res = r_wave_eqn(param) * 1e-4  
+    if mode == 'r':
+        res = r_wave_eqn(param) 
+    elif mode == 'l':
+        res = l_wave_eqn(param) 
+    elif mode == 's':
+        res = static_eqn(param)
     return res
 
