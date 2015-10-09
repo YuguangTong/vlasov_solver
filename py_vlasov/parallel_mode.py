@@ -68,7 +68,7 @@ def r_wave_rhs(n, w, kz, kp, wp, tz, tp, vthz, vthp, Omega, vz, method = 'pade')
     The value of the summed term on the RHS of Eq (2), P. 267, Stix (1992). 
     Eq (2) yields R wave.
     """
-    term_1 = -(tp-tz)/tz
+    term_1 = (tp-tz)/tz
     term_2 = ((w - kz*vz + Omega)*tp - Omega*tz)/(kz * vthz * tz)
     f_zp = choose_zp_fn(method)
     zeta = f_zeta(w, kz, vz, Omega, vthz, -1)
