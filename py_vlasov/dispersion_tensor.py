@@ -40,7 +40,7 @@ def f_abn(n, w, kz, tp, tz, vthz, Omega, vz, method='pade'):
     
     Return
     ------
-    A_n and B_n
+    A_n and B_n (multiplied by w, omega)
     """
     if method == 'pade':
         f_zp = pade
@@ -53,11 +53,11 @@ def f_abn(n, w, kz, tp, tz, vthz, Omega, vz, method='pade'):
             "Please choose between 'pade', 'numpy' and 'mpmath'")
     zeta = f_zeta(w, kz, vz, Omega, vthz, n)
     zp_zeta = f_zp(zeta)
-    an_1 = 1/w * (tp-tz)/tz
-    an_2 = 1/(kz * vthz) * ((w - kz*vz - n*Omega)*tp + n*Omega*tz)/(w*tz)
+    an_1 = (tp-tz)/tz
+    an_2 = 1/(kz * vthz) * ((w - kz*vz - n*Omega)*tp + n*Omega*tz)/tz
     an = an_1 + an_2 * zp_zeta
-    bn_1 = 1/kz * ((w-n*Omega)*tp - (kz*vz-n*Omega)*tz)/(w*tz)
-    bn_2 = 1/kz * (w-n*Omega)/(kz*vthz)*((w-kz*vz-n*Omega)*tp + n*Omega*tz)/(w*tz)
+    bn_1 = 1/kz * ((w-n*Omega)*tp - (kz*vz-n*Omega)*tz)/tz
+    bn_2 = 1/kz * (w-n*Omega)/(kz*vthz)*((w-kz*vz-n*Omega)*tp + n*Omega*tz)/tz
     bn = bn_1 + bn_2 * zp_zeta
     return an, bn   
 
@@ -96,7 +96,7 @@ def f_yn(n, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method = 'pade'):
     
     Return
     ------
-    return tensore Y_n
+    return tensor Y_n (times w)
     """
     
     lamb = f_lambda(kp, vthz, Omega)
@@ -135,16 +135,16 @@ def f_chi(n, w, kz, kp, wp, tz, tp, vthz, vthp, Omega, vz, method = 'pade'):
     
     Return
     ------
-    Return the susceptibility tensor \chi for the species
+    Return the susceptibility tensor \chi for the species (times w^2)
     """
     chi_tensor = np.zeros((3, 3), dtype = np.cfloat)
-    chi_tensor[2, 2] = 2 * wp**2/ (w * kz * vthp**2)
+    chi_tensor[2, 2] = 2 * wp**2 * w/ (kz * vthp**2)
     lamb = f_lambda(kp, vthz, Omega)
     y_sum = np.sum(np.array([f_yn(i, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method)
                              +f_yn(-i, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method) for i in np.arange(1, n+1)]),
                             axis=0)
     y_sum += f_yn(0, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method)
-    chi_tensor += wp**2 / w * np.exp(-lamb) * y_sum
+    chi_tensor += wp**2 * np.exp(-lamb) * y_sum
     return chi_tensor
 
 def f_epsilon(param):
@@ -158,10 +158,10 @@ def f_epsilon(param):
     
     Return
     ------
-    Return the dielectric tensor
+    Return the dielectric tensor (times w^2 on top of Stix)
     """
-    
-    return np.identity(3, dtype = np.cfloat) + np.sum(np.array(list(map(f_chi, *param))), axis = 0)
+    w = param[1][0]
+    return np.identity(3, dtype = np.cfloat) * w**2 + np.sum(np.array(list(map(f_chi, *param))), axis = 0)
 
 def f_d(param):
     """
@@ -174,14 +174,14 @@ def f_d(param):
     
     Return
     ------
-    Return the dispersion tensor    
+    Return the dispersion tensor (times w^2 on top of Stix' expression).
     """
     w = param[1][0]
     kz = param[2][0]
     kp = param[3][0]
-    nz = kz * cspeed/ w
-    nx = kp * cspeed/ w
-    return f_epsilon(param) + np.array([[-nz**2, 0, nx*nz], [0, -nx**2-nz**2, 0], [nz*nx, 0, -nx**2]])
+    nz_w = kz * cspeed
+    nx_w = kp * cspeed
+    return f_epsilon(param) + np.array([[-nz_w**2, 0, nx_w*nz_w], [0, -nx_w**2-nz_w**2, 0], [nz_w*nx_w, 0, -nx_w**2]])
 
 def dt_wrapper(wrel, kperp, kpar, betap, tetp = 1, method = 'pade', mratio=1836, n=10, aol=1/5000):
     """
