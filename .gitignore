@@ -4,3 +4,4 @@
 py_vlasov/*~
 py_vlasov/.ipynb_checkpoints/
 py_vlasov/__pycache__/
+py_vlasov/*.pyc
