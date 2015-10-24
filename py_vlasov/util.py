@@ -53,14 +53,14 @@ def pade(z):
 def zp(z):
     """
     Plasma dispersion function
-    Utilize the Dawnson function, dawsn, in scipy.special module.
+    Utilize the faddeeva function, wofz, in scipy.special module.
 
     Keyword arguments:
     z: dimensionless argument of the plasma dispersion function.
     
     Return the value of Zp(z)
     """
-    return -2. * scipy.special.dawsn(z) + 1.j * np.sqrt(np.pi) * np.exp(- z **2)
+    return 1.j * np.sqrt(np.pi) * scipy.special.wofz(z)
     
 def zpd(x):
     """
