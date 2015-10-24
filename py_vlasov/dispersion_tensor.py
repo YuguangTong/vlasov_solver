@@ -138,7 +138,7 @@ def f_chi(n, w, kz, kp, wp, tz, tp, vthz, vthp, Omega, vz, method = 'pade'):
     Return the susceptibility tensor \chi for the species
     """
     chi_tensor = np.zeros((3, 3), dtype = np.cfloat)
-    chi_tensor[2, 2] = 2 * wp**2/ (w * kz * vthp**2)
+    chi_tensor[2, 2] = 2 * wp**2/ (w * kz * vthp**2) * vz
     lamb = f_lambda(kp, vthz, Omega)
     y_sum = np.sum(np.array([f_yn(i, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method)
                              +f_yn(-i, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method) for i in np.arange(1, n+1)]),

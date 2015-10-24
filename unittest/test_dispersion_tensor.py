@@ -1,7 +1,7 @@
 import numpy.testing as npt
 import numpy as np
 import unittest
-from py_vlasov.dispersion_tensor import f_abn, f_yn
+from py_vlasov.dispersion_tensor import f_abn, f_yn, f_chi
 
 
 class Test_dispersion_tensor(unittest.TestCase):
@@ -69,7 +69,30 @@ class Test_dispersion_tensor(unittest.TestCase):
              [0, -1.072552723 + 0.6510730508j, -6.510730508 - 0.7604398751j],
              [0, 6.510730508 + 0.7604398751j, -15.24691467 + 130.5409615j]])
         npt.assert_allclose(yn, expected_yn, rtol = 1e-7)
-        
-        
+
+    def test_chi_1(self):
+        """
+        test chi tensor as defined in Stix (1992).
+        """
+        NN = 0
+        w = 0.01
+        kz = 1.0e-7
+        kp = 1.0e-7
+        wp = 2.0e3
+        tz = 1.0e-18
+        tp = 1.0e-18
+        vthz = 1e5
+        vthp = 1e5
+        omega = 0.1
+        vz = 100.
+
+        chi = f_chi(NN, w, kz, kp, wp, tz, tp, vthz, vthp,
+                    omega, vz, method = 'numpy')
+        expected_chi = np.array([
+            [0,0,0],
+            [0, -4.268813377e8+2.591303241e8j, -2.591303241e9-3.026588661e8j],
+            [0, 2.591303241e9+3.026588661e8j, -5.988348146e9+5.195595431e10j]])
+        npt.assert_allclose(chi, expected_chi, rtol = 1e-7)
+            
 if __name__ == '__main__':
     unittest.main()
