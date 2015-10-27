@@ -21,6 +21,7 @@ class Test_dispersion_tensor(unittest.TestCase):
         vz = 3.4e3
         
         an, bn = f_abn(n, w, kz, tp, tz, vthz, omega, vz, method='numpy')
+        an, bn = an/w, bn/w
         npt.assert_allclose(an, -1.9218850625427564 + 5.595463531399411j,
                             rtol=1e-7)
         npt.assert_allclose(bn, -102817.6686637071 + 391682.4471979587j,
@@ -28,6 +29,7 @@ class Test_dispersion_tensor(unittest.TestCase):
 
         w = 0.03
         an, bn = f_abn(n, w, kz, tp, tz, vthz, omega, vz, method='numpy')
+        an, bn = an/w, bn/w
         npt.assert_allclose(an, 631.2715006824648 - 46.41868239430783j,
                             rtol=1e-7)
         npt.assert_allclose(bn, 551271.5006824646 - 46418.68239430781j,
@@ -35,6 +37,7 @@ class Test_dispersion_tensor(unittest.TestCase):
         
         n, w = 5, 0.03
         an, bn = f_abn(n, w, kz, tp, tz, vthz, omega, vz, method='numpy')
+        an, bn = an/w, bn/w
         npt.assert_allclose(bn, 1.6137363813074678e6 + 2.3743306625716157e7j,
                             rtol=1e-7)
         npt.assert_allclose(an, -30.426402059415523 - 426.52646633023045j,
@@ -42,6 +45,7 @@ class Test_dispersion_tensor(unittest.TestCase):
 
         n, w, kz, vthz = 20, 3.7, 0.11, 0.35
         an, bn = f_abn(n, w, kz, tp, tz, vthz, omega, vz, method='numpy')
+        an, bn = an/w, bn/w
         npt.assert_allclose(an, -0.26539669257210097 -0.0j, \
                             rtol=1e-7)
         npt.assert_allclose(bn, -902.3486484918872 + 0.0j,\
@@ -63,7 +67,7 @@ class Test_dispersion_tensor(unittest.TestCase):
         omega = 0.1
         vz = 100.
 
-        yn = f_yn(n, w, kz, kp, tp, tz, vthz, vthp, omega, vz, method = 'numpy')
+        yn = f_yn(n, w, kz, kp, tp, tz, vthz, vthp, omega, vz, method = 'numpy')/w
         expected_yn = np.array(
             [[0,0,0],
              [0, -1.072552723 + 0.6510730508j, -6.510730508 - 0.7604398751j],
@@ -87,7 +91,7 @@ class Test_dispersion_tensor(unittest.TestCase):
         vz = 100.
 
         chi = f_chi(NN, w, kz, kp, wp, tz, tp, vthz, vthp,
-                    omega, vz, method = 'numpy')
+                    omega, vz, method = 'numpy')/w**2
         expected_chi = np.array([
             [0,0,0],
             [0, -4.268813377e8+2.591303241e8j, -2.591303241e9-3.026588661e8j],
@@ -111,7 +115,7 @@ class Test_dispersion_tensor(unittest.TestCase):
         vz = 100.
 
         chi = f_chi(NN, w, kz, kp, wp, tz, tp, vthz, vthp,
-                    omega, vz, method = 'numpy')
+                    omega, vz, method = 'numpy')/w**2
         expected_chi = np.array([
             [4.972725326e8, 3.812283500e9j, -3.086420946e8],
             [-3.812283500e9j, -3.037753676e9 + 1.098455531e9j, -3.661518437e9-3.465700712e8j],
