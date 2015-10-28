@@ -96,6 +96,24 @@ def list_to_complex(x):
     """
     return x[0] + x[1] * 1j
 
+def kzkp(k, theta):
+    """
+    parameter
+    ---------
+    k: wave number
+    theta: angle (degree) between k and B (background B field). 
+    Return
+    ------
+    (kz, kp)
+    kz: parallel wavenumber
+    kp: perpendicular wavenumber
+    
+    """
+    theta_rad = theta * np.pi/180.
+    kz = k * np.cos(theta_rad)
+    kp = k * np.sin(theta_rad)
+    return kz, kp
+
 def rank(A, atol=1e-13, rtol=0):
     """Estimate the rank (i.e. the dimension of the nullspace) of a matrix.
 

@@ -140,10 +140,11 @@ def f_chi(n, w, kz, kp, wp, tz, tp, vthz, vthp, Omega, vz, method = 'pade'):
     chi_tensor = np.zeros((3, 3), dtype = np.cfloat)
     chi_tensor[2, 2] = 2 * wp**2 * w/ (kz * vthp**2) * vz
     lamb = f_lambda(kp, vthz, Omega)
-    y_sum = np.sum(np.array([f_yn(i, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method)
-                             +f_yn(-i, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method) for i in np.arange(1, n+1)]),
-                            axis=0)
-    y_sum += f_yn(0, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method)
+    # y_sum = np.sum(np.array([f_yn(i, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method) \
+    #                          +f_yn(-i, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method) \
+    #                          for i in np.arange(1, n+1)]), axis=0)
+    # y_sum += f_yn(0, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method)
+    y_sum = np.sum(np.array([f_yn(i, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method) for i in np.arange(-n, n+1)]), axis=0)
     chi_tensor += wp**2 * np.exp(-lamb) * y_sum
     return chi_tensor
 

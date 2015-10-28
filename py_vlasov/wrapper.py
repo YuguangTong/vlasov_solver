@@ -4,7 +4,7 @@ from .dispersion_tensor import f_d
 from scipy import linalg
 import numpy as np
 
-def oblique_wrapper(wrel, kpar, kperp, betap, t_list, a_list, n_list, q_list, m_list, v_list, n = 10, method = 'pade', aol=1/500):
+def oblique_wrapper(wrel, kpar, kperp, betap, t_list, a_list, n_list, q_list, m_list, v_list, n = 10, method = 'pade', aol=1/5000):
     """
     Takes in parameters for a multiple-component plasma 
     and return the determinant of the dispersion matrix.
@@ -62,4 +62,6 @@ def oblique_wrapper(wrel, kpar, kperp, betap, t_list, a_list, n_list, q_list, m_
         inp += [species]    
 
     param = list(map(list, zip(*inp)))
-    return linalg.det(f_d(param))*1e-40 
+    res =  linalg.det(f_d(param) * aol**2 /omega_p**2)
+    print(wrel, res)
+    return res
