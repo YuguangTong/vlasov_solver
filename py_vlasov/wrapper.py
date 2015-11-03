@@ -164,10 +164,9 @@ def parallel_wrapper(wrel, kpar, kperp, betap, t_list, a_list,
     negative real freq --> L mode
     """
     
-    # for parallel modes we don't need to sum over Bessel fns
-    assert n==0
     # propagation along B
-    assert kperp == 0
+    if kperp != 0:
+        raise VlasovException("parallel mode should have kperp = 0.\n")
     inp = input_gen(wrel, kpar, kperp, betap, t_list, a_list,
                     n_list, q_list, m_list, v_list, n, method, aol)
     param = list(map(list, zip(*inp)))
