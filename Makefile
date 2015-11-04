@@ -9,3 +9,4 @@ test:
 	$(py) unittest/test_dispersion_tensor.py -v
 	$(py) unittest/test_isotropic.py -v
 	$(py) unittest/test_parallel.py -v
+	$(py) unittest/test_follow.py -v 
