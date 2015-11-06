@@ -16,7 +16,7 @@ class Test_parallel(unittest.TestCase):
         kp = 0.1      
         betap = 3.16
         t_list=[1., 1., 4.]
-        a_list=[0.5, 0., 0.]
+        a_list=[0.5, 1., 1.]
         n_list=[1., 1.10,0.05] 
         q_list=[1., -1., 2.]
         m_list=[1., 1/1836, 4.]
@@ -39,7 +39,7 @@ class Test_parallel(unittest.TestCase):
         kp = 0        
         betap = 3.16
         t_list=[1., 1., 4.]
-        a_list=[0.5, 0., 0.]
+        a_list=[0.5, 1., 1.]
         n_list=[1., 1.10,0.05] 
         q_list=[1., -1., 2.]
         m_list=[1., 1/1836, 4.]
@@ -65,7 +65,7 @@ class Test_parallel(unittest.TestCase):
         kp = 0        
         betap = 3.16
         t_list=[1., 1., 4.]
-        a_list=[0.5, 0., 0.]
+        a_list=[0.5, 1., 1.]
         n_list=[1., 1.10,0.05] 
         q_list=[1., -1., 2.]
         m_list=[1., 1/1836, 4.]
@@ -91,7 +91,7 @@ class Test_parallel(unittest.TestCase):
         kp = 0        
         betap = 3.16
         t_list=[1., 1., 4.]
-        a_list=[0.5, 0., 0.]
+        a_list=[0.5, 1., 1.]
         n_list=[1., 1.10,0.05] 
         q_list=[1., -1., 2.]
         m_list=[1., 1/1836, 4.]
@@ -117,7 +117,7 @@ class Test_parallel(unittest.TestCase):
          kp = 0         
          betap = 3.16
          t_list=[1., 1., 4.]
-         a_list=[0.3, 0., 0.]
+         a_list=[0.7, 1., 1.]
          n_list=[1., 1.10,0.05] 
          q_list=[1., -1., 2.]
          m_list=[1., 1/1836, 4.]
@@ -143,7 +143,7 @@ class Test_parallel(unittest.TestCase):
          kp = 0
          betap = 3.16
          t_list=[1., 1., 4.]
-         a_list=[0.3, 0., 0.]
+         a_list=[0.7, 1., 1.]
          n_list=[1., 1.10,0.05] 
          q_list=[1., -1., 2.]
          m_list=[1., 1/1836, 4.]
@@ -169,7 +169,7 @@ class Test_parallel(unittest.TestCase):
          kp = 0
          betap = 1.0
          t_list=[1., 1., 4.]
-         a_list=[-0.5, 0., 0.]
+         a_list=[1.5, 1., 1.]
          n_list=[1., 1.10,0.05] 
          q_list=[1., -1., 2.]
          m_list=[1., 1/1836, 4.]
@@ -195,7 +195,7 @@ class Test_parallel(unittest.TestCase):
          kp = 0
          betap = 1.0
          t_list=[1., 1., 4.]
-         a_list=[-0.5, 0., 0.]
+         a_list=[1.5, 1., 1.]
          n_list=[1., 1.10,0.05] 
          q_list=[1., -1., 2.]
          m_list=[1., 1/1836, 4.]
@@ -221,7 +221,7 @@ class Test_parallel(unittest.TestCase):
          kp = 0
          betap = 1.0
          t_list=[1., 1., 4.]
-         a_list=[-1.25, 0., 0.]
+         a_list=[2.25, 1., 1.]
          n_list=[1., 1.10,0.05] 
          q_list=[1., -1., 2.]
          m_list=[1., 1/1836, 4.]
@@ -247,7 +247,7 @@ class Test_parallel(unittest.TestCase):
          kp = 0
          betap = 1.0
          t_list=[1., 1., 4.]
-         a_list=[-1.5, 0., 0.]
+         a_list=[2.5, 1., 1.]
          n_list=[1., 1.10,0.05] 
          q_list=[1., -1., 2.]
          m_list=[1., 1/1836, 4.]
@@ -273,7 +273,7 @@ class Test_parallel(unittest.TestCase):
          kp = 0
          betap = 1.0
          t_list=[1., 1., 4.]
-         a_list=[-0.5, 0., 0.]
+         a_list=[1.5, 1., 1.]
          n_list=[1., 1.10,0.05] 
          q_list=[1., -1., 2.]
          m_list=[1., 1/1836, 4.]

@@ -18,7 +18,7 @@ class Test_isotropic(unittest.TestCase):
 
         betap = 1.
         t_list=[1.,1]
-        a_list=[0., 0.]
+        a_list=[1., 1.]
         n_list=[1.,1.] 
         q_list=[1.,-1.]
         m_list=[1., 1./1836.]
@@ -104,7 +104,7 @@ class Test_isotropic(unittest.TestCase):
 
         betap = 1.
         t_list=[1.,1]
-        a_list=[0., 0.]
+        a_list=[1., 1.]
         n_list=[1.,1.] 
         q_list=[1.,-1.]
         m_list=[1., 1./1836.]
@@ -173,7 +173,7 @@ class Test_isotropic(unittest.TestCase):
 
         betap = 1.
         t_list=[1.,1]
-        a_list=[0., 0.]
+        a_list=[1., 1.]
         n_list=[1.,1.] 
         q_list=[1.,-1.]
         m_list=[1., 1./1836.]
