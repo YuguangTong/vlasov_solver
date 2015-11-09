@@ -20,7 +20,7 @@ class Test_dispersion_tensor(unittest.TestCase):
         omega = 0.34
         vz = 3.4e3
         
-        an, bn = f_abn(n, w, kz, tp, tz, vthz, omega, vz, method='numpy')
+        an, bn = f_abn(n, w, kz, tz, tp, vthz, omega, vz, method='numpy')
         an, bn = an/w, bn/w
         npt.assert_allclose(an, -1.9218850625427564 + 5.595463531399411j,
                             rtol=1e-7)
@@ -28,7 +28,7 @@ class Test_dispersion_tensor(unittest.TestCase):
                             rtol=1e-7)
 
         w = 0.03
-        an, bn = f_abn(n, w, kz, tp, tz, vthz, omega, vz, method='numpy')
+        an, bn = f_abn(n, w, kz, tz, tp, vthz, omega, vz, method='numpy')
         an, bn = an/w, bn/w
         npt.assert_allclose(an, 631.2715006824648 - 46.41868239430783j,
                             rtol=1e-7)
@@ -36,7 +36,7 @@ class Test_dispersion_tensor(unittest.TestCase):
                             rtol=1e-7)
         
         n, w = 5, 0.03
-        an, bn = f_abn(n, w, kz, tp, tz, vthz, omega, vz, method='numpy')
+        an, bn = f_abn(n, w, kz, tz, tp, vthz, omega, vz, method='numpy')
         an, bn = an/w, bn/w
         npt.assert_allclose(bn, 1.6137363813074678e6 + 2.3743306625716157e7j,
                             rtol=1e-7)
@@ -44,7 +44,7 @@ class Test_dispersion_tensor(unittest.TestCase):
                             rtol=1e-7)
 
         n, w, kz, vthz = 20, 3.7, 0.11, 0.35
-        an, bn = f_abn(n, w, kz, tp, tz, vthz, omega, vz, method='numpy')
+        an, bn = f_abn(n, w, kz, tz, tp, vthz, omega, vz, method='numpy')
         an, bn = an/w, bn/w
         npt.assert_allclose(an, -0.26539669257210097 -0.0j, \
                             rtol=1e-7)
@@ -67,7 +67,7 @@ class Test_dispersion_tensor(unittest.TestCase):
         omega = 0.1
         vz = 100.
 
-        yn = f_yn(n, w, kz, kp, tp, tz, vthz, vthp, omega, vz, method = 'numpy')/w
+        yn = f_yn(n, w, kz, kp, tz, tp, vthz, vthp, omega, vz, method = 'numpy')/w
         expected_yn = np.array(
             [[0,0,0],
              [0, -1.072552723 + 0.6510730508j, -6.510730508 - 0.7604398751j],
@@ -122,5 +122,29 @@ class Test_dispersion_tensor(unittest.TestCase):
             [-3.086420946e8, 3.661518437e9+3.465700712e8j, -1.976136342e9 + 2.497184730e10j]])
         npt.assert_allclose(chi, expected_chi, rtol = 1e-7)
 
+    def test_chi_3(self):
+        """
+        test chi tensor as defined in Stix (1992).
+        """
+        NN = 3
+        w = 0.09578833596200093
+        kz = 1.5975774807850725e-06
+        kp = 1.5975774807850725e-06
+        wp = 4789.4167982678364
+        tz = 217763.9218377612
+        tp = 195987.52965398508
+        vthz = 59958.491600000001
+        vthp = 56881.619557222031
+        omega = 0.9578833596200093
+        vz = 0.
+
+        chi = f_chi(NN, w, kz, kp, wp, tz, tp, vthz, vthp,
+                    omega, vz, method = 'numpy')
+        expected_chi = np.array([[246532.0684, 2.3160720168e6j, -14138.594698],
+                                 [-2.31607201685e6j, 25210.8159178 + 
+                                  120337.3246248j,-1.33708138e6-143053.010866j],
+                                 [-14138.594698, 1.33708138472e6 + 143053.010866j, -3.4654579662e6 + 2.977992432056e7j]])
+        npt.assert_allclose(chi, expected_chi, rtol = 1e-7)
+        
 if __name__ == '__main__':
     unittest.main()

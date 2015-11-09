@@ -23,7 +23,7 @@ def f_zeta(w, kz, vz, Omega, vthz, n):
     """
     return (w-kz*vz-n*Omega)/(kz*vthz)
 
-def f_abn(n, w, kz, tp, tz, vthz, Omega, vz, method='pade'):
+def f_abn(n, w, kz, tz, tp, vthz, Omega, vz, method='pade'):
     """
     Calculate the coefficient \A_n and \B_n, as defined in Stix(1992).
     
@@ -77,7 +77,7 @@ def f_lambda(kp, vthp, Omega):
     """
     return (kp * vthp/Omega)**2 / 2
 
-def f_yn(n, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method = 'pade'):
+def f_yn(n, w, kz, kp, tz, tp, vthz, vthp, Omega, vz, method = 'pade'):
     """
     Calculate tensor Y_n as defined in 'Waves in plamas' (p 258, Stix 1992)
     
@@ -99,10 +99,10 @@ def f_yn(n, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method = 'pade'):
     return tensor Y_n (times w)
     """
     
-    lamb = f_lambda(kp, vthz, Omega)
+    lamb = f_lambda(kp, vthp, Omega)
     i_n = scipy.special.iv(n, lamb)
     i_np = 0.5 * (scipy.special.iv(n-1, lamb) + scipy.special.iv(n+1, lamb))
-    an, bn = f_abn(n, w, kz, tp, tz, vthz, Omega, vz, method)
+    an, bn = f_abn(n, w, kz, tz, tp, vthz, Omega, vz, method)
     y = np.zeros((3, 3), dtype = np.cfloat)
     y[0, 0] = n**2 * i_n/lamb * an
     y[0, 1] = -1j * n * (i_n - i_np) * an
@@ -139,12 +139,12 @@ def f_chi(n, w, kz, kp, wp, tz, tp, vthz, vthp, Omega, vz, method = 'pade'):
     """
     chi_tensor = np.zeros((3, 3), dtype = np.cfloat)
     chi_tensor[2, 2] = 2 * wp**2 * w/ (kz * vthp**2) * vz
-    lamb = f_lambda(kp, vthz, Omega)
+    lamb = f_lambda(kp, vthp, Omega)
     # y_sum = np.sum(np.array([f_yn(i, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method) \
     #                          +f_yn(-i, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method) \
     #                          for i in np.arange(1, n+1)]), axis=0)
     # y_sum += f_yn(0, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method)
-    y_sum = np.sum(np.array([f_yn(i, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method) for i in np.arange(-n, n+1)]), axis=0)
+    y_sum = np.sum(np.array([f_yn(i, w, kz, kp, tz, tp, vthz, vthp, Omega, vz, method) for i in np.arange(-n, n+1)]), axis=0)
     chi_tensor += wp**2 * np.exp(-lamb) * y_sum
     return chi_tensor
 

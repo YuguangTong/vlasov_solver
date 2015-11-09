@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 # consider expansion to include changes in mass
 #---------------------------------------------#
 def follow_eigen_freq(seed_freq, target_param, target_value,
-                      param, num, guess_fn, show_plot=False):
+                      param, num, show_plot=False):
     """
     Follow the frequency of an eigenmode of a plasma along a
     parameter ('target_param') till the parameter reach a
@@ -30,29 +30,21 @@ def follow_eigen_freq(seed_freq, target_param, target_value,
     show_plot: whether make a plot for the frequencies stepped through
     """
     if target_param == 'kz':
-        return follow_kz(seed_freq, target_value,
-                         param, num, guess_fn, show_plot=False)
+        return follow_kz(seed_freq, target_value,param, num)
     elif target_parm == 'kp':
-        return follow_kp(seed_freq, target_param, target_value,
-                         param, num, guess_fn, show_plot=False)
+        return follow_kp(seed_freq, target_param, target_value, param, num)
     elif target_parm == 'k':
-        return follow_k(seed_freq, target_value,
-                        param, num, guess_fn, show_plot=False)
+        return follow_k(seed_freq, target_value, param, num)
     elif target_parm == 'angle':
-        return follow_angle(seed_freq, target_value,
-                            param, num, guess_fn, show_plot=False)
+        return follow_angle(seed_freq, target_value, param, num)
     elif target_parm == 'beta':
-        return follow_beta(seed_freq, target_value,
-                           param, num, guess_fn, show_plot=False)
+        return follow_beta(seed_freq, target_value, param, num)
     elif target_parm == 'temperature':
-        return follow_temperature(seed_freq, target_value,
-                                  param, num, guess_fn, show_plot=False)
+        return follow_temperature(seed_freq, target_value, param, num)
     elif target_parm == 'anisotropy':
-        return follow_anisotropy(seed_freq, target_value,
-                                 param, num, guess_fn, show_plot=False)
+        return follow_anisotropy(seed_freq, target_value, param, num)
     elif target_parm == 'drift':
-        return follow_drift(seed_freq, target_value,
-                            param, num, guess_fn, show_plot=False)
+        return follow_drift(seed_freq, target_value, param, num)
     else:
         raise VlasovException('{0} is not a valid parameter to vary'.
                               format(target_param))
@@ -137,16 +129,15 @@ def generate_steps(start, end, log_incrmt=0.1, lin_incrmt=0.1, incrmt_method = '
         return generate_1d_steps(start, end, log_incrmt,
                                  lin_incrmt, incrmt_method)
     else:
-        print('start', start)
-        print('end', end)
         assert hasattr(start, '__iter__') and hasattr(end, '__iter__')
         return generate_2d_steps(start, end, log_incrmt,
                                  lin_incrmt, incrmt_method)
     
-def follow_kz(seed_freq, target_value, param, guess_fn, show_plot=False,
+def follow_kz(seed_freq, target_value, param, show_plot=False,
               log_incrmt=0.1, lin_incrmt=0.1, incrmt_method = 'log'):
     """
-    to implement
+    follow a mode with frequency SEED_FREQ in a plasma specified by
+    PARAM along the kz parameter.
     """
     (kz, kp, beta, t_list, a_list, n_list, q_list, m_list,
      v_list, n, method, aol) = param
@@ -168,17 +159,42 @@ def follow_kz(seed_freq, target_value, param, guess_fn, show_plot=False,
         plt.plot(kz_list, np.real(freq_lst), 'o-', markersize= 2)
         plt.xscale('log')
         plt.yscale('log')
-        plt.xlabel(r'$k\rho_p$')
+        plt.xlabel(r'$kz\rho_p$')
         plt.ylabel(r'$\omega/\Omega_{ci}$')
-        plt.title(r'Change $k\rho_p$ from {0} to {1}'.format(seed_kz, target_value))
+        plt.title(r'Change $kz\rho_p$ from {0} to {1}'.format(seed_kz, target_value))
         plt.show()        
     return guess
 
-def follow_kp(seed_freq, target_value, param, increment,guess_fn, show_plot=False):
+def follow_kp(seed_freq, target_value, param, show_plot=False,
+              log_incrmt=0.1, lin_incrmt=0.1, incrmt_method = 'log'):
     """
     to implement
     """
-    return 0
+    (kz, kp, beta, t_list, a_list, n_list, q_list, m_list,
+     v_list, n, method, aol) = param
+    seed_kp = kp
+    # a list of kp to step through
+    kp_list = generate_steps(kp, target_value, log_incrmt=log_incrmt,
+                             lin_incrmt=lin_incrmt, incrmt_method = incrmt_method)
+
+    freq_lst = []
+    guess = seed_freq
+    for kp in kp_list:
+        f = lambda wrel: real_imag(disp_det(
+            list_to_complex(wrel), kz, kp, beta, t_list, a_list,
+            n_list, q_list, m_list, v_list, n=n, method=method, aol=aol))
+        freq = scipy.optimize.fsolve(f, real_imag(guess))
+        guess = list_to_complex(freq)
+        freq_lst += [guess]
+    if show_plot:
+        plt.plot(kp_list, np.real(freq_lst), 'o-', markersize= 2)
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.xlabel(r'$kp\rho_p$')
+        plt.ylabel(r'$\omega/\Omega_{ci}$')
+        plt.title(r'Change $kp\rho_p$ from {0} to {1}'.format(seed_kp, target_value))
+        plt.show()        
+    return guess
 
 def follow_angle(seed_freq, target_value, param, increment,guess_fn, show_plot=False):
     """
@@ -205,11 +221,38 @@ def follow_temperature(seed_freq, target_value, param, increment,guess_fn, show_
     """    
     return 0
 
-def follow_anisotropy(seed_freq, target_value, param, increment,guess_fn, show_plot=False):
+def follow_anisotropy(seed_freq, target_value, param, show_plot=False,
+              log_incrmt=0.1, lin_incrmt=0.1, incrmt_method = 'log'):
     """
-    to implement
-    """    
-    return 0
+    follow a mode with frequency SEED_FREQ in a plasma specified by
+    PARAM along the anisotropy parameter.
+    """
+    (kz, kp, beta, t_list, a_list, n_list, q_list, m_list,
+     v_list, n, method, aol) = param
+    seed_a_list = a_list
+    # a list of kp to step through
+    a_list_steps = generate_steps(a_list, target_value, log_incrmt=log_incrmt,
+                             lin_incrmt=lin_incrmt, incrmt_method = incrmt_method)
+
+    freq_lst = []
+    guess = seed_freq
+    for a_list in a_list_steps:
+        f = lambda wrel: real_imag(disp_det(
+            list_to_complex(wrel), kz, kp, beta, t_list, a_list,
+            n_list, q_list, m_list, v_list, n=n, method=method, aol=aol))
+        freq = scipy.optimize.fsolve(f, real_imag(guess))
+        guess = list_to_complex(freq)
+        freq_lst += [guess]
+    if show_plot:
+        plt.plot(a_list_steps[:,0], np.real(freq_lst), 'o-', markersize= 2)
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.xlabel(r'$T_{p\perp}/T_{p\parallel}$')
+        plt.ylabel(r'$\omega/\Omega_{ci}$')
+        plt.title(r'Change $T_{s\perp}/T_{s\parallel}$')
+        plt.show()        
+    return guess
+   
 
 def follow_drift(seed_freq, target_value, param, increment, guess_fn, show_plot=False):
     """
