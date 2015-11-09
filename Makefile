@@ -11,3 +11,5 @@ short-test:
 	$(py) unittest/test_parallel.py -v
 long-test:
 	$(py) unittest/test_follow.py -v 
+
+all-test: short-test long-test

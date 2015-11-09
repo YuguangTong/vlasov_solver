@@ -168,5 +168,53 @@ class Test_follow(unittest.TestCase):
         npt.assert_allclose(w_r, 0.1561297, rtol = 1e-4)
         npt.assert_allclose(w_i, -4.5627037e-5, rtol = 1e-4)
         
+    def test_follow_temperature_mhd(self):
+        """
+        test follow_tempature() on MHD modes.
+        Benchmarked against DSHARK and WHAMP
+        """
+        kz = 0.05
+        kp = 0.086602540378443865 
+        
+        betap = 1.
+        t_list=[1.,1]
+        a_list=[1., 1.]
+        n_list=[1.,1.] 
+        q_list=[1.,-1.]
+        m_list=[1., 1./1836.]
+        v_list=[0.,0.]
+        n = 10
+        method = 'pade'
+        aol=1/5000
+
+        param = [kz, kp, betap, t_list, a_list, n_list, q_list,
+                 m_list, v_list, n, method, aol]
+
+        # Alfven mode
+        
+        target_temperature = [1., 10.]
+        seed_freq = 0.1
+        freq = follow_temperature(seed_freq, target_temperature, param)
+        w_r, w_i = real_imag(freq)
+        npt.assert_allclose(w_r,4.997801e-2, rtol = 1e-4)
+        npt.assert_allclose(w_i, -1.093311e-4, rtol = 1e-4)
+
+        # fast mode
+        
+        target_temperature = [1., 10.]
+        seed_freq = 0.3
+        freq = follow_temperature(seed_freq, target_temperature, param)
+        w_r, w_i = real_imag(freq)
+        npt.assert_allclose(w_r, 0.257211, rtol = 1e-4)
+        npt.assert_allclose(w_i, -4.280582e-3, rtol = 1e-4)
+
+        # slow mode
+        
+        target_temperature = [1., 5.]
+        seed_freq = 0.06 - 0.04j
+        freq = follow_temperature(seed_freq, target_temperature, param)
+        w_r, w_i = real_imag(freq)
+        npt.assert_allclose(w_r, 7.1758e-2, rtol = 1e-4)
+        npt.assert_allclose(w_i, -2.6035477e-2, rtol = 1e-4)
 if __name__ == '__main__':
     unittest.main()
