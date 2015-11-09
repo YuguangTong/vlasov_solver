@@ -205,15 +205,42 @@ def follow_angle(seed_freq, target_value, param, increment,guess_fn, show_plot=F
 
 def follow_k(seed_freq, target_value, param, increment,guess_fn, show_plot=False):
     """
-    to implement
     """    
     return 0
 
-def follow_beta(seed_freq, target_value, param, increment,guess_fn, show_plot=False):
+def follow_beta(seed_freq, target_value, param, show_plot=False,
+                log_incrmt=0.1, lin_incrmt=0.1, incrmt_method = 'log'):
     """
-    to implement
+    follow a mode with frequency SEED_FREQ in a plasma specified by
+    PARAM along the beta (proton parallel beta).
     """    
-    return 0
+    (kz, kp, beta, t_list, a_list, n_list, q_list, m_list,
+     v_list, n, method, aol) = param
+    seed_beta = beta
+    # a list of beta to step through
+    beta_list = generate_steps(beta, target_value, log_incrmt=log_incrmt,
+                               lin_incrmt=lin_incrmt, incrmt_method = incrmt_method)
+
+    freq_lst = []
+    guess = seed_freq
+    for beta in beta_list:
+        f = lambda wrel: real_imag(disp_det(
+            list_to_complex(wrel), kz, kp, beta, t_list, a_list,
+            n_list, q_list, m_list, v_list, n=n, method=method, aol=aol))
+        freq = scipy.optimize.fsolve(f, real_imag(guess))
+        guess = list_to_complex(freq)
+        freq_lst += [guess]
+    if show_plot:
+        plt.plot(beta_list, np.real(freq_lst), 'o-', markersize= 2)
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.xlabel(r'$\beta_p$')
+        plt.ylabel(r'$\omega/\Omega_{ci}$')
+        plt.title(r'Change $\beta_p$ from {0} to {1}'.
+                  format(beta_seed, target_value))
+        plt.show()        
+    return guess
+
 
 def follow_temperature(seed_freq, target_value, param, increment,guess_fn, show_plot=False):
     """
