@@ -8,7 +8,8 @@ short-test:
 	$(py) unittest/test_util.py -v
 	$(py) unittest/test_dispersion_tensor.py -v
 	$(py) unittest/test_isotropic.py -v
-	$(py) unittest/test_parallel.py -v
+	$(py) unittest/test_parallel_instability.py -v
+	$(py) unittest/test_oblique_instability.py -v
 long-test:
 	$(py) unittest/test_follow.py -v 
 

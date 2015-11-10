@@ -119,7 +119,7 @@ def oblique_wrapper(wrel, kpar, kperp, betap, t_list, a_list, n_list, q_list, m_
     return res
 
 def parallel_wrapper(wrel, kpar, kperp, betap, t_list, a_list,
-                     n_list, q_list, m_list, v_list, n = 0,
+                     n_list, q_list, m_list, v_list, n = 10,
                      method = 'pade', aol=1/5000):
     """
     Consider parallel wavenumber vectors, take in parameters 
@@ -173,7 +173,7 @@ def parallel_wrapper(wrel, kpar, kperp, betap, t_list, a_list,
     return r_wave_eqn(param)
 
 def disp_det(wrel, kpar, kperp, betap, t_list, a_list,
-                     n_list, q_list, m_list, v_list, n = 0,
+                     n_list, q_list, m_list, v_list, n = 10,
                      method = 'pade', aol=1/5000):
     """
     Consider parallel or oblique waves propagating in
