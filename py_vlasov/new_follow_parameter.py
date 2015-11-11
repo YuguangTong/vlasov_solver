@@ -207,10 +207,39 @@ def follow_angle(seed_freq, target_value, param, increment,guess_fn, show_plot=F
     
     return 0
 
-def follow_k(seed_freq, target_value, param, increment,guess_fn, show_plot=False):
+def follow_k(seed_freq, target_value, param, show_plot=False,
+             log_incrmt=0.1, lin_incrmt=0.1, incrmt_method = 'log'):
     """
     """    
-    return 0
+    (kz, kp, beta, t_list, a_list, n_list, q_list, m_list,
+     v_list, n, method, aol) = param
+    seed_k = np.sqrt(kz**2 + kp**2)
+    kz_k = kz/seed_k
+    kp_k = kp/seed_k
+    # a list of k to step through
+    k_list = generate_steps(seed_k, target_value, log_incrmt=log_incrmt,
+                             lin_incrmt=lin_incrmt, incrmt_method = incrmt_method)
+    freq_lst = []
+    guess = seed_freq
+    for k in k_list:
+        kz, kp = k * kz_k, k * kp_k
+        f = lambda wrel: real_imag(disp_det(
+            list_to_complex(wrel), kz, kp, beta, t_list, a_list,
+            n_list, q_list, m_list, v_list, n=n, method=method, aol=aol))
+        freq = scipy.optimize.fsolve(f, real_imag(guess))
+        guess = list_to_complex(freq)
+        freq_lst += [guess]
+    if show_plot:
+        plt.plot(k_list, np.real(freq_lst), 'o-', markersize= 2)
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.xlabel(r'$k\rho_p$')
+        plt.ylabel(r'$\omega/\Omega_{ci}$')
+        plt.title(r'Change $k\rho_p$ from {0} to {1}'.format(seed_k, target_value))
+        plt.show()        
+    new_param = (kz, kp, beta, t_list, a_list, n_list, q_list, m_list,
+                 v_list, n, method, aol)
+    return (guess, new_param)
 
 def follow_beta(seed_freq, target_value, param, show_plot=False,
                 log_incrmt=0.1, lin_incrmt=0.1, incrmt_method = 'log'):

@@ -202,7 +202,7 @@ class Test_follow(unittest.TestCase):
         # Alfven mode
         
         target_temperature = [1., 10.]
-        seed_freq = 0.1
+        seed_freq = 0.05
         freq = follow_temperature(seed_freq, target_temperature, param)
         freq = freq[0]        
         w_r, w_i = real_imag(freq)
@@ -212,7 +212,7 @@ class Test_follow(unittest.TestCase):
         # fast mode
         
         target_temperature = [1., 10.]
-        seed_freq = 0.3
+        seed_freq = 0.2
         freq = follow_temperature(seed_freq, target_temperature, param)
         freq = freq[0]        
         w_r, w_i = real_imag(freq)
@@ -228,5 +228,59 @@ class Test_follow(unittest.TestCase):
         w_r, w_i = real_imag(freq)
         npt.assert_allclose(w_r, 7.1758e-2, rtol = 1e-4)
         npt.assert_allclose(w_i, -2.6035477e-2, rtol = 1e-4)
+
+    def test_follow_k_mhd(self):
+        """
+        test follow_k() on MHD modes.
+        Benchmarked against DSHARK.
+        """
+        kz = 0.05
+        kp = 0.086602540378443865 
+        
+        betap = 1.
+        t_list=[1.,1]
+        a_list=[1., 1.]
+        n_list=[1.,1.] 
+        q_list=[1.,-1.]
+        m_list=[1., 1./1836.]
+        v_list=[0.,0.]
+        n = 10
+        method = 'pade'
+        aol=1/5000
+
+        param = [kz, kp, betap, t_list, a_list, n_list, q_list,
+                 m_list, v_list, n, method, aol]
+
+        # Alfven mode
+        
+        target_k = 1.0
+        seed_freq = 0.05
+        freq = follow_k(seed_freq, target_k, param)
+        freq = freq[0]        
+        w_r, w_i = real_imag(freq)
+        npt.assert_allclose(w_r, 0.4176781, rtol = 1e-4)
+        npt.assert_allclose(w_i, -0.1325794, rtol = 1e-4)
+
+        # fast mode
+        
+        target_k = 1.0
+        seed_freq = 0.2
+        freq = follow_k(seed_freq, target_k, param,
+                        log_incrmt = 0.05)
+        freq = freq[0]        
+        w_r, w_i = real_imag(freq)
+        npt.assert_allclose(w_r, 1.563559, rtol = 1e-4)
+        npt.assert_allclose(w_i, -0.1767448, rtol = 1e-4)
+
+        # slow mode
+        
+        target_k = 1.0
+        seed_freq = 0.06 - 0.04j
+        freq = follow_k(seed_freq, target_k, param)
+        freq = freq[0]        
+        w_r, w_i = real_imag(freq)
+        npt.assert_allclose(w_r, 0.5930758, rtol = 1e-4)
+        npt.assert_allclose(w_i, -0.3922563, rtol = 1e-4)        
+
 if __name__ == '__main__':
     unittest.main()
