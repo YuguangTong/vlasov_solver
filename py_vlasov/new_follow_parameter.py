@@ -162,8 +162,10 @@ def follow_kz(seed_freq, target_value, param, show_plot=False,
         plt.xlabel(r'$kz\rho_p$')
         plt.ylabel(r'$\omega/\Omega_{ci}$')
         plt.title(r'Change $kz\rho_p$ from {0} to {1}'.format(seed_kz, target_value))
-        plt.show()        
-    return guess
+        plt.show()
+    new_param = (target_value, kp, beta, t_list, a_list, n_list, q_list, m_list,
+                 v_list, n, method, aol)
+    return (guess, new_param)
 
 def follow_kp(seed_freq, target_value, param, show_plot=False,
               log_incrmt=0.1, lin_incrmt=0.1, incrmt_method = 'log'):
@@ -194,7 +196,9 @@ def follow_kp(seed_freq, target_value, param, show_plot=False,
         plt.ylabel(r'$\omega/\Omega_{ci}$')
         plt.title(r'Change $kp\rho_p$ from {0} to {1}'.format(seed_kp, target_value))
         plt.show()        
-    return guess
+    new_param = (kz, target_value, beta, t_list, a_list, n_list, q_list, m_list,
+                 v_list, n, method, aol)
+    return (guess, new_param)
 
 def follow_angle(seed_freq, target_value, param, increment,guess_fn, show_plot=False):
     """
@@ -239,7 +243,9 @@ def follow_beta(seed_freq, target_value, param, show_plot=False,
         plt.title(r'Change $\beta_p$ from {0} to {1}'.
                   format(beta_seed, target_value))
         plt.show()        
-    return guess
+    new_param = (kz, kp, target_value, t_list, a_list, n_list, q_list, m_list,
+                 v_list, n, method, aol)
+    return (guess, new_param)
 
 
 def follow_temperature(seed_freq, target_value, param, show_plot=False,
@@ -271,7 +277,9 @@ def follow_temperature(seed_freq, target_value, param, show_plot=False,
         plt.xlabel(r'$T_{s\parallel}/T_{p\parallel}$')
         plt.ylabel(r'$\omega/\Omega_{ci}$')
         plt.show()        
-    return guess
+    new_param = (kz, kp, beta, target_value, a_list, n_list, q_list, m_list,
+                 v_list, n, method, aol)
+    return (guess, new_param)
 
 def follow_anisotropy(seed_freq, target_value, param, show_plot=False,
               log_incrmt=0.1, lin_incrmt=0.1, incrmt_method = 'log'):
@@ -303,7 +311,9 @@ def follow_anisotropy(seed_freq, target_value, param, show_plot=False,
         plt.ylabel(r'$\omega/\Omega_{ci}$')
         plt.title(r'Change $T_{s\perp}/T_{s\parallel}$')
         plt.show()        
-    return guess
+    new_param = (kz, kp, beta, t_list, target_value, n_list, q_list, m_list,
+                 v_list, n, method, aol)
+    return (guess, new_param)
    
 
 def follow_drift(seed_freq, target_value, param, increment, guess_fn, show_plot=False):

@@ -37,12 +37,14 @@ class Test_follow(unittest.TestCase):
         log_inc = 0.2
         freq = follow_kz(seed_freq, target_kz, param,
                          log_incrmt=log_inc, incrmt_method = 'log')
+        freq = freq[0]
         w_r, w_i = real_imag(freq)
         npt.assert_allclose(w_r, 9.9115e-2, rtol = 1e-3)
         npt.assert_allclose(w_i, - 2.2500e-4, rtol = 1e-3)
 
         target_kz = 0.2
         freq = follow_kz(seed_freq, target_kz, param )
+        freq = freq[0]
         w_r, w_i = real_imag(freq)
         npt.assert_allclose(w_r, 1.8294e-1, rtol = 1e-3)
         npt.assert_allclose(w_i, - 4.6795e-3, rtol = 1e-3)        
@@ -73,12 +75,14 @@ class Test_follow(unittest.TestCase):
         
         target_kp = 0.5
         freq = follow_kp(seed_freq, target_kp, param)
+        freq = freq[0]        
         w_r, w_i = real_imag(freq)
         npt.assert_allclose(w_r, 1.0333e-2, rtol = 1e-4)
         npt.assert_allclose(w_i, -1.0742e-4, rtol = 1e-4)
 
         target_kp = 1.0
         freq = follow_kp(seed_freq, target_kp, param)
+        freq = freq[0]        
         w_r, w_i = real_imag(freq)
         npt.assert_allclose(w_r, 1.1366e-2, rtol = 1e-4)
         npt.assert_allclose(w_i, -3.2756e-4, rtol = 1e-4)
@@ -108,12 +112,14 @@ class Test_follow(unittest.TestCase):
                  m_list, v_list, n, method, aol]
         target_anisotropy = [2., 2.]
         freq = follow_anisotropy(seed_freq, target_anisotropy, param)
+        freq = freq[0]        
         w_r, w_i = real_imag(freq)
         npt.assert_allclose(w_r, 1.4079e-1, rtol = 1e-4)
         npt.assert_allclose(w_i, -5.3245e-5, rtol = 1e-4)
 
         target_anisotropy = [.2, .2]
         freq = follow_anisotropy(seed_freq, target_anisotropy, param)
+        freq = freq[0]                
         w_r, w_i = real_imag(freq)
         npt.assert_allclose(w_r, 4.31826e-2, rtol = 1e-4)
         npt.assert_allclose(w_i, -4.458088e-5, rtol = 1e-4)        
@@ -145,6 +151,7 @@ class Test_follow(unittest.TestCase):
         target_beta = 0.1
         seed_freq = 0.06 - 0.04j        
         freq = follow_beta(seed_freq, target_beta, param)
+        freq = freq[0]        
         w_r, w_i = real_imag(freq)
         npt.assert_allclose(w_r, 7.0589e-2, rtol = 1e-4)
         npt.assert_allclose(w_i, -3.35809e-2, rtol = 1e-4)
@@ -154,6 +161,7 @@ class Test_follow(unittest.TestCase):
         target_beta = 0.1
         seed_freq = 0.25        
         freq = follow_beta(seed_freq, target_beta, param)
+        freq = freq[0]        
         w_r, w_i = real_imag(freq)
         npt.assert_allclose(w_r,0.3381558, rtol = 1e-4)
         npt.assert_allclose(w_i, -1.54426867e-3, rtol = 1e-4)        
@@ -164,6 +172,7 @@ class Test_follow(unittest.TestCase):
         target_beta = 0.1
         seed_freq = 0.1       
         freq = follow_beta(seed_freq, target_beta, param)
+        freq = freq[0]        
         w_r, w_i = real_imag(freq)
         npt.assert_allclose(w_r, 0.1561297, rtol = 1e-4)
         npt.assert_allclose(w_i, -4.5627037e-5, rtol = 1e-4)
@@ -195,6 +204,7 @@ class Test_follow(unittest.TestCase):
         target_temperature = [1., 10.]
         seed_freq = 0.1
         freq = follow_temperature(seed_freq, target_temperature, param)
+        freq = freq[0]        
         w_r, w_i = real_imag(freq)
         npt.assert_allclose(w_r,4.997801e-2, rtol = 1e-4)
         npt.assert_allclose(w_i, -1.093311e-4, rtol = 1e-4)
@@ -204,6 +214,7 @@ class Test_follow(unittest.TestCase):
         target_temperature = [1., 10.]
         seed_freq = 0.3
         freq = follow_temperature(seed_freq, target_temperature, param)
+        freq = freq[0]        
         w_r, w_i = real_imag(freq)
         npt.assert_allclose(w_r, 0.257211, rtol = 1e-4)
         npt.assert_allclose(w_i, -4.280582e-3, rtol = 1e-4)
@@ -213,6 +224,7 @@ class Test_follow(unittest.TestCase):
         target_temperature = [1., 5.]
         seed_freq = 0.06 - 0.04j
         freq = follow_temperature(seed_freq, target_temperature, param)
+        freq = freq[0]        
         w_r, w_i = real_imag(freq)
         npt.assert_allclose(w_r, 7.1758e-2, rtol = 1e-4)
         npt.assert_allclose(w_i, -2.6035477e-2, rtol = 1e-4)
