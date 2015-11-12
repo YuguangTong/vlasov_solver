@@ -13,4 +13,4 @@ short-test:
 long-test:
 	$(py) unittest/test_follow.py -v 
 
-all-test: short-test long-test
+test: short-test long-test

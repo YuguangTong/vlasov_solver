@@ -345,11 +345,51 @@ def follow_anisotropy(seed_freq, target_value, param, show_plot=False,
     return (guess, new_param)
    
 
-def follow_drift(seed_freq, target_value, param, increment, guess_fn, show_plot=False):
+def generate_v_steps(v_list, target_v_list, lin_incrmt):
+    start = np.array(v_list)
+    end = np.array(target_v_list)
+    num_step = 1 + np.amax(np.abs(start - end)/lin_incrmt)
+    num_step = int(round(num_step))
+    incrmt_list = (end - start)/num_step
+    res = np.array([start + incrmt_list * i  for i in range(num_step+1)])
+    return res
+
+def follow_drift(seed_freq, target_value, param, show_plot=False,
+                 lin_incrmt=0.1):
     """
-    to implement
-    """    
-    return 0
+    follow a mode with frequency SEED_FREQ in a plasma specified by
+    PARAM along the drift parameter.
+    
+    Caution: system with current are difficult to follow since dispersion
+    relation changes quickly.
+    We do not intend to provide assurance that solution converges.
+    """
+    (kz, kp, beta, t_list, a_list, n_list, q_list, m_list,
+     v_list, n, method, aol) = param
+    seed_v_list = v_list
+    # a list of drift to step through
+    v_list_steps = generate_v_steps(v_list, target_value,
+                                    lin_incrmt=lin_incrmt)
+    freq_lst = []
+    guess = seed_freq
+    for v_list in v_list_steps:
+        f = lambda wrel: real_imag(disp_det(
+            list_to_complex(wrel), kz, kp, beta, t_list, a_list,
+            n_list, q_list, m_list, v_list, n=n, method=method, aol=aol))
+        freq = scipy.optimize.fsolve(f, real_imag(guess))
+        guess = list_to_complex(freq)
+        freq_lst += [guess]
+    if show_plot:
+        plt.plot(np.real(freq_lst), 'o-', markersize= 2)
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.xlabel('step')
+        plt.ylabel(r'$\omega/\Omega_{ci}$')
+        plt.title(r'Change drift speed$')
+        plt.show()        
+    new_param = (kz, kp, beta, t_list, a_list, n_list, q_list, m_list,
+                 v_list, n, method, aol)
+    return (guess, new_param)
 
 
 

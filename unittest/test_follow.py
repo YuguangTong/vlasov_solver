@@ -282,5 +282,83 @@ class Test_follow(unittest.TestCase):
         npt.assert_allclose(w_r, 0.5930758, rtol = 1e-4)
         npt.assert_allclose(w_i, -0.3922563, rtol = 1e-4)        
 
+    def test_follow_k_mirror(self):
+        """
+        test follow_k() on mirror modes.
+        Benchmarked against DSHARK.
+        """
+        k = 0.1
+        angle = 71. * np.pi/180.
+        kz = k * np.cos(angle)
+        kp = k * np.sin(angle)
+        art_vd = 0.5
+        betap = 1.
+        t_list=[1.,1]
+        a_list=[2., 1.]
+        n_list=[1.,1.] 
+        q_list=[1.,-1.]
+        m_list=[1., 1./1836.]
+        v_list=[art_vd, art_vd]
+        n = 10
+        method = 'pade'
+        aol=1/5000
+
+        param = [kz, kp, betap, t_list, a_list, n_list, q_list,
+                 m_list, v_list, n, method, aol]
+
+        # Alfven mode
+        
+        target_k = 0.5
+        doppler_shift = kz * art_vd/np.sqrt(betap)
+        seed_freq = doppler_shift + 3e-3j 
+        freq = follow_k(seed_freq, target_k, param)
+        freq = freq[0]        
+        w_r, w_i = real_imag(freq)
+        doppler_shift = target_k * np.cos(angle) * art_vd/np.sqrt(betap)
+        npt.assert_allclose(w_r, doppler_shift, rtol = 1e-8)
+        npt.assert_allclose(w_i, 0.5739430E-02, rtol = 1e-4)
+
+    def test_follow_drift_alfven_fast(self):
+        """
+        test follow_tempature() on Alfven and fast mode.
+        Benchmarked against WHAMP (which has difficulty finding slow mode).
+        """
+        kz = 0.05
+        kp = 0.086602540378443865 
+        
+        betap = 1.
+        t_list=[1.,1., 1.]
+        a_list=[1., 1., 1.]
+        n_list=[1.,.9, .1] 
+        q_list=[1.,-1., -1.]
+        m_list=[1., 1./1836., 1./1836.]
+        v_list=[0., 0., 0.]
+        n = 10
+        method = 'pade'
+        aol=1/5000
+
+        param = [kz, kp, betap, t_list, a_list, n_list, q_list,
+                 m_list, v_list, n, method, aol]
+
+        # Alfven mode
+        
+        target_drift = [0., 1., -9.]
+        seed_freq = 0.05
+        freq = follow_drift(seed_freq, target_drift, param,lin_incrmt=0.5)
+        freq = freq[0]        
+        w_r, w_i = real_imag(freq)
+        npt.assert_allclose(w_r,4.9827e-2, rtol = 1e-4)
+        npt.assert_allclose(w_i, -1.8566e-5, rtol = 1e-4)
+
+        # fast mode
+        
+        target_drift = [0., 1., -9.]
+        seed_freq = 0.15
+        freq = follow_drift(seed_freq, target_drift, param,lin_incrmt=0.5)
+        freq = freq[0]        
+        w_r, w_i = real_imag(freq)
+        npt.assert_allclose(w_r, 1.5034e-1, rtol = 1e-4)
+        npt.assert_allclose(w_i,- 1.4559e-3, rtol = 1e-4)
+        
 if __name__ == '__main__':
     unittest.main()
