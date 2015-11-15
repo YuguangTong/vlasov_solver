@@ -5,7 +5,7 @@ from py_vlasov.util import real_imag, kzkp
 from py_vlasov.follow_parameter import simple_follow_fn
 from py_vlasov.new_follow_parameter import (
     follow_kz, follow_kp, follow_k, follow_angle, follow_beta,
-    follow_temperature, follow_anisotropy, follow_drift)
+    follow_temperature, follow_anisotropy, follow_drift, follow_density)
 
 
 class Test_follow(unittest.TestCase):
@@ -359,6 +359,53 @@ class Test_follow(unittest.TestCase):
         w_r, w_i = real_imag(freq)
         npt.assert_allclose(w_r, 1.5034e-1, rtol = 1e-4)
         npt.assert_allclose(w_i,- 1.4559e-3, rtol = 1e-4)
+
+    def test_follow_density_mhd(self):
+        """
+        test follow_density() on MHD modes.
+        Benchmarked against DSHARK.
+        """
+        kz = 0.05
+        kp = 0.086602540378443865 
         
+        betap = 1.
+        t_list=[1., 1., 10.]
+        a_list=[1., 1., 1.]
+        n_list=[1., 1., 0.] 
+        q_list=[1.,-1., -1.]
+        m_list=[1., 1./1836., 1./1836.]
+        v_list=[0., 0., 0.]
+        n = 10
+        method = 'pade'
+        aol=1/5000
+
+        param = [kz, kp, betap, t_list, a_list, n_list, q_list,
+                 m_list, v_list, n, method, aol]
+
+        # Alfven mode
+        
+        target_density = [1., 0., 1.]
+        seed_freq = 0.05
+        freq = follow_density(seed_freq, target_density, param,lin_incrmt=0.1)
+        freq = freq[0]        
+        w_r, w_i = real_imag(freq)
+        npt.assert_allclose(w_r, 4.997801138e-002, rtol = 1e-4)
+        npt.assert_allclose(w_i, -1.0933112E-004, rtol = 1e-4)
+
+        # Fast mode
+        seed_freq = 0.15
+        freq = follow_density(seed_freq, target_density, param,lin_incrmt=0.05)
+        freq = freq[0]        
+        w_r, w_i = real_imag(freq)
+        npt.assert_allclose(w_r, 0.2572110929, rtol = 1e-4)
+        npt.assert_allclose(w_i, -4.2805821078e-3, rtol = 1e-4)        
+
+        # slow mode
+        seed_freq = 0.06 - 0.04j
+        freq = follow_density(seed_freq, target_density, param,lin_incrmt=0.05)
+        freq = freq[0]        
+        w_r, w_i = real_imag(freq)
+        npt.assert_allclose(w_r, 7.46495745e-2, rtol = 1e-4)
+        npt.assert_allclose(w_i, -2.342562429e-2, rtol = 1e-4)        
 if __name__ == '__main__':
     unittest.main()

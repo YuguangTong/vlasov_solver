@@ -270,7 +270,7 @@ def follow_beta(seed_freq, target_value, param, show_plot=False,
         plt.xlabel(r'$\beta_p$')
         plt.ylabel(r'$\omega/\Omega_{ci}$')
         plt.title(r'Change $\beta_p$ from {0} to {1}'.
-                  format(beta_seed, target_value))
+                  format(seed_beta, target_value))
         plt.show()        
     new_param = (kz, kp, target_value, t_list, a_list, n_list, q_list, m_list,
                  v_list, n, method, aol)
@@ -345,9 +345,13 @@ def follow_anisotropy(seed_freq, target_value, param, show_plot=False,
     return (guess, new_param)
    
 
-def generate_v_steps(v_list, target_v_list, lin_incrmt):
-    start = np.array(v_list)
-    end = np.array(target_v_list)
+def generate_vn_steps(lst, target_lst, lin_incrmt):
+    """
+    Generate search steps when following solution along v_list or n_list.
+    Gurantees linear change from 
+    """
+    start = np.array(lst)
+    end = np.array(target_lst)
     num_step = 1 + np.amax(np.abs(start - end)/lin_incrmt)
     num_step = int(round(num_step))
     incrmt_list = (end - start)/num_step
@@ -368,7 +372,7 @@ def follow_drift(seed_freq, target_value, param, show_plot=False,
      v_list, n, method, aol) = param
     seed_v_list = v_list
     # a list of drift to step through
-    v_list_steps = generate_v_steps(v_list, target_value,
+    v_list_steps = generate_vn_steps(v_list, target_value,
                                     lin_incrmt=lin_incrmt)
     freq_lst = []
     guess = seed_freq
@@ -391,5 +395,40 @@ def follow_drift(seed_freq, target_value, param, show_plot=False,
                  v_list, n, method, aol)
     return (guess, new_param)
 
-
+def follow_density(seed_freq, target_value, param, show_plot=False,
+                   lin_incrmt=0.1):
+    """
+    follow a mode with frequency SEED_FREQ in a plasma specified by
+    PARAM along the drift parameter.
+    
+    Caution: system with current are difficult to follow since dispersion
+    relation changes quickly.
+    We do not intend to provide assurance that solution converges.
+    """
+    (kz, kp, beta, t_list, a_list, n_list, q_list, m_list,
+     v_list, n, method, aol) = param
+    seed_n_list = n_list
+    # a list of relative density to step through
+    n_list_steps = generate_vn_steps(n_list, target_value,
+                                    lin_incrmt=lin_incrmt)
+    freq_lst = []
+    guess = seed_freq
+    for n_list in n_list_steps:
+        f = lambda wrel: real_imag(disp_det(
+            list_to_complex(wrel), kz, kp, beta, t_list, a_list,
+            n_list, q_list, m_list, v_list, n=n, method=method, aol=aol))
+        freq = scipy.optimize.fsolve(f, real_imag(guess))
+        guess = list_to_complex(freq)
+        freq_lst += [guess]
+    if show_plot:
+        plt.plot(np.real(freq_lst), 'o-', markersize= 2)
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.xlabel('step')
+        plt.ylabel(r'$\omega/\Omega_{ci}$')
+        plt.title(r'Change density$')
+        plt.show()        
+    new_param = (kz, kp, beta, t_list, a_list, n_list, q_list, m_list,
+                 v_list, n, method, aol)
+    return (guess, new_param)
 
