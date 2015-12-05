@@ -69,19 +69,6 @@ def zpd(x):
     """
     return -2 * (1 + x * zp(x))
 
-def zp_mp(z):
-    """
-    Plasma dispersion function to user-defined precison.                              
-    Utilize the complementary error function in mpmath library.                       
-
-    Keyword arguments:
-    z: dimensionless argument of the plasma dispersion function.
-    
-    Return the value of Zp(z) to arbitrary precision.
-    'import mpmath' and 'mpmath.mp.dps=n' set the precison to n digit.
-    """
-    return -mp.sqrt(mp.pi) * mp.exp(-z**2) * mp.erfi(z) + mp.mpc(0, 1) * mp.sqrt(mp.pi) * mp.exp(-z**2)
-
 def real_imag(val):
     """
     Return the list [real(val), imag(val)]

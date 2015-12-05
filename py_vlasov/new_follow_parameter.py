@@ -156,7 +156,7 @@ def follow_kz(seed_freq, target_value, param, show_plot=False,
         guess = list_to_complex(freq)
         freq_lst += [guess]
     if show_plot:
-        plt.plot(kz_list, np.real(freq_lst), 'o-', markersize= 2)
+        plt.plot(kz_list, np.abs(np.real(freq_lst)), 'o-', markersize= 2)
         plt.xscale('log')
         plt.yscale('log')
         plt.xlabel(r'$kz\rho_p$')
@@ -165,7 +165,7 @@ def follow_kz(seed_freq, target_value, param, show_plot=False,
         plt.show()
     new_param = (target_value, kp, beta, t_list, a_list, n_list, q_list, m_list,
                  v_list, n, method, aol)
-    return (guess, new_param)
+    return (guess, new_param, freq_lst)
 
 def follow_kp(seed_freq, target_value, param, show_plot=False,
               log_incrmt=0.1, lin_incrmt=0.1, incrmt_method = 'log'):
@@ -189,7 +189,7 @@ def follow_kp(seed_freq, target_value, param, show_plot=False,
         guess = list_to_complex(freq)
         freq_lst += [guess]
     if show_plot:
-        plt.plot(kp_list, np.real(freq_lst), 'o-', markersize= 2)
+        plt.plot(kp_list, np.abs(np.real(freq_lst)), 'o-', markersize= 2)
         plt.xscale('log')
         plt.yscale('log')
         plt.xlabel(r'$kp\rho_p$')
@@ -198,7 +198,7 @@ def follow_kp(seed_freq, target_value, param, show_plot=False,
         plt.show()        
     new_param = (kz, target_value, beta, t_list, a_list, n_list, q_list, m_list,
                  v_list, n, method, aol)
-    return (guess, new_param)
+    return (guess, new_param, freq_lst)
 
 def follow_angle(seed_freq, target_value, param, increment,guess_fn, show_plot=False):
     """
@@ -230,7 +230,7 @@ def follow_k(seed_freq, target_value, param, show_plot=False,
         guess = list_to_complex(freq)
         freq_lst += [guess]
     if show_plot:
-        plt.plot(k_list, np.real(freq_lst), 'o-', markersize= 2)
+        plt.plot(k_list, np.abs(np.real(freq_lst)), 'o-', markersize= 2)
         plt.xscale('log')
         plt.yscale('log')
         plt.xlabel(r'$k\rho_p$')
@@ -239,7 +239,7 @@ def follow_k(seed_freq, target_value, param, show_plot=False,
         plt.show()        
     new_param = (kz, kp, beta, t_list, a_list, n_list, q_list, m_list,
                  v_list, n, method, aol)
-    return (guess, new_param)
+    return (guess, new_param, freq_lst)
 
 def follow_beta(seed_freq, target_value, param, show_plot=False,
                 log_incrmt=0.1, lin_incrmt=0.1, incrmt_method = 'log'):
@@ -264,7 +264,7 @@ def follow_beta(seed_freq, target_value, param, show_plot=False,
         guess = list_to_complex(freq)
         freq_lst += [guess]
     if show_plot:
-        plt.plot(beta_list, np.real(freq_lst), 'o-', markersize= 2)
+        plt.plot(beta_list, np.abs(np.real(freq_lst)), 'o-', markersize= 2)
         plt.xscale('log')
         plt.yscale('log')
         plt.xlabel(r'$\beta_p$')
@@ -274,8 +274,7 @@ def follow_beta(seed_freq, target_value, param, show_plot=False,
         plt.show()        
     new_param = (kz, kp, target_value, t_list, a_list, n_list, q_list, m_list,
                  v_list, n, method, aol)
-    return (guess, new_param)
-
+    return (guess, new_param, freq_lst)
 
 def follow_temperature(seed_freq, target_value, param, show_plot=False,
                        log_incrmt=0.1, lin_incrmt=0.1, incrmt_method = 'log'):
@@ -300,15 +299,14 @@ def follow_temperature(seed_freq, target_value, param, show_plot=False,
         guess = list_to_complex(freq)
         freq_lst += [guess]
     if show_plot:
-        plt.plot(t_list_steps[:,0], np.real(freq_lst), 'o-', markersize= 2)
-        plt.xscale('log')
+        plt.plot(np.abs(np.real(freq_lst)),'o-', markersize= 2)
         plt.yscale('log')
-        plt.xlabel(r'$T_{s\parallel}/T_{p\parallel}$')
+        plt.xlabel('step')
         plt.ylabel(r'$\omega/\Omega_{ci}$')
         plt.show()        
     new_param = (kz, kp, beta, target_value, a_list, n_list, q_list, m_list,
                  v_list, n, method, aol)
-    return (guess, new_param)
+    return (guess, new_param, freq_lst)
 
 def follow_anisotropy(seed_freq, target_value, param, show_plot=False,
               log_incrmt=0.1, lin_incrmt=0.1, incrmt_method = 'log'):
@@ -333,17 +331,18 @@ def follow_anisotropy(seed_freq, target_value, param, show_plot=False,
         guess = list_to_complex(freq)
         freq_lst += [guess]
     if show_plot:
-        plt.plot(a_list_steps[:,0], np.real(freq_lst), 'o-', markersize= 2)
+        plt.plot(a_list_steps[:,0], np.abs(np.real(freq_lst)),
+                 'o-', markersize= 2)
         plt.xscale('log')
         plt.yscale('log')
-        plt.xlabel(r'$T_{p\perp}/T_{p\parallel}$')
+        plt.xlabel('step')
         plt.ylabel(r'$\omega/\Omega_{ci}$')
         plt.title(r'Change $T_{s\perp}/T_{s\parallel}$')
         plt.show()        
     new_param = (kz, kp, beta, t_list, target_value, n_list, q_list, m_list,
                  v_list, n, method, aol)
-    return (guess, new_param)
-   
+    return (guess, new_param, freq_lst)
+
 
 def generate_vn_steps(lst, target_lst, lin_incrmt):
     """
@@ -384,16 +383,16 @@ def follow_drift(seed_freq, target_value, param, show_plot=False,
         guess = list_to_complex(freq)
         freq_lst += [guess]
     if show_plot:
-        plt.plot(np.real(freq_lst), 'o-', markersize= 2)
+        plt.plot(np.abs(np.real(freq_lst)), 'o-', markersize= 2)
         plt.xscale('log')
         plt.yscale('log')
         plt.xlabel('step')
         plt.ylabel(r'$\omega/\Omega_{ci}$')
-        plt.title(r'Change drift speed$')
+        plt.title(r'Change drift speed')
         plt.show()        
     new_param = (kz, kp, beta, t_list, a_list, n_list, q_list, m_list,
                  v_list, n, method, aol)
-    return (guess, new_param)
+    return (guess, new_param, freq_lst)
 
 def follow_density(seed_freq, target_value, param, show_plot=False,
                    lin_incrmt=0.1):
@@ -421,14 +420,14 @@ def follow_density(seed_freq, target_value, param, show_plot=False,
         guess = list_to_complex(freq)
         freq_lst += [guess]
     if show_plot:
-        plt.plot(np.real(freq_lst), 'o-', markersize= 2)
-        plt.xscale('log')
+        plt.plot(np.abs(np.real(freq_lst)), 'o-', markersize= 2)
         plt.yscale('log')
         plt.xlabel('step')
         plt.ylabel(r'$\omega/\Omega_{ci}$')
-        plt.title(r'Change density$')
+        plt.title(r'Change density')
         plt.show()        
     new_param = (kz, kp, beta, t_list, a_list, n_list, q_list, m_list,
                  v_list, n, method, aol)
-    return (guess, new_param)
+    return (guess, new_param, freq_lst)
+
 
