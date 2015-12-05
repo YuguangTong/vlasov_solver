@@ -1,4 +1,4 @@
-from .util import zp, pade, zp_mp, VlasovException, real_imag
+from .util import zp, pade, VlasovException, real_imag
 from .util import (pmass, emass, echarge, permittivity, permeability, cspeed, boltzmann)
 import numpy as np
 import scipy.optimize
@@ -39,11 +39,9 @@ def choose_zp_fn(method):
         f_zp = pade
     elif method == 'numpy':
         f_zp = zp
-    elif method == 'mpmath':
-        f_zp = zp_mp
     else:
         raise VlasovException("Unreconized method.\n" +
-            "Please choose between 'pade', 'numpy' and 'mpmath'")
+            "Please choose between 'pade'and 'numpy'")
     return f_zp
 
 def r_wave_rhs(n, w, kz, kp, wp, tz, tp, vthz, vthp, Omega, vz, method = 'pade'):

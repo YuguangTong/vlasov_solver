@@ -1,7 +1,7 @@
-from .util import zp, pade, zp_mp, VlasovException, real_imag
+from .util import zp, pade, VlasovException, real_imag
 from .util import (pmass, emass, echarge, permittivity, permeability, cspeed, boltzmann)
 from .dispersion_tensor import f_d
-from .parallel_mode import r_wave_eqn
+from .parallel_mode import r_wave_eqn, l_wave_eqn, static_wave_eqn
 from scipy import linalg
 import numpy as np
 
@@ -120,7 +120,7 @@ def oblique_wrapper(wrel, kpar, kperp, betap, t_list, a_list, n_list, q_list, m_
 
 def parallel_wrapper(wrel, kpar, kperp, betap, t_list, a_list,
                      n_list, q_list, m_list, v_list, n = 10,
-                     method = 'pade', aol=1/5000):
+                     method = 'pade', aol=1/5000, mode = 'R'):
     """
     Consider parallel wavenumber vectors, take in parameters 
     for a multiple-component plasma and return the determinant 
@@ -151,17 +151,14 @@ def parallel_wrapper(wrel, kpar, kperp, betap, t_list, a_list,
     n: number of Bessel functions to sum over
     method: how to compute the plasma dispersion funciton.
     aol: v_a/c. 
+    mode: wave nature
+          'R' --> right-hand-polarized EM wave
+          'L' --> left-hand-polarized EM wave
+          'S' --> electrostatic wave
 
     returns
     -------
     returns the value of the dispersion equation.
-
-    N.B.
-    This wrapper does solve for electrostatic mode.
-    We don't explicitly separate the RH-circularly
-    polarized mode from LH-cicularly polarized mode. 
-    positive real freq --> R mode
-    negative real freq --> L mode
     """
     
     # propagation along B
@@ -170,11 +167,18 @@ def parallel_wrapper(wrel, kpar, kperp, betap, t_list, a_list,
     inp = input_gen(wrel, kpar, kperp, betap, t_list, a_list,
                     n_list, q_list, m_list, v_list, n, method, aol)
     param = list(map(list, zip(*inp)))
-    return r_wave_eqn(param)
+    if mode == 'R' or mode == 'r':
+        return r_wave_eqn(param)
+    elif mode == 'L' or mode == 'l':
+        return l_wave_eqn(param)
+    elif mode == 'S' or mode == 's':
+        return static_wave_eqn(param)
+    else:
+        raise VlasovException('Not a proper wave mode. Choose between r, l and s.')
 
 def disp_det(wrel, kpar, kperp, betap, t_list, a_list,
                      n_list, q_list, m_list, v_list, n = 10,
-                     method = 'pade', aol=1/5000):
+                     method = 'pade', aol=1/5000, mode='R'):
     """
     Consider parallel or oblique waves propagating in
     a multiple-component plasma and return the determinant 
@@ -205,7 +209,10 @@ def disp_det(wrel, kpar, kperp, betap, t_list, a_list,
     n: number of Bessel functions to sum over
     method: how to compute the plasma dispersion funciton.
     aol: v_a/c. 
-
+    mode: parallel wave classification
+          'R' --> right-hand-polarized EM wave
+          'L' --> left-hand-polarized EM wave
+          'S' --> electrostatic wave
     returns
     -------
     returns the value of the dispersion equation.
@@ -215,7 +222,7 @@ def disp_det(wrel, kpar, kperp, betap, t_list, a_list,
     if kperp == 0:
         return  parallel_wrapper(wrel, kpar, kperp, betap, t_list, a_list,
                                  n_list, q_list, m_list, v_list, n = n,
-                                 method = method, aol=aol)
+                                 method = method, aol=aol, mode=mode)
     else:
         return oblique_wrapper(wrel, kpar, kperp, betap, t_list, a_list,
                                n_list, q_list, m_list, v_list, n = n,

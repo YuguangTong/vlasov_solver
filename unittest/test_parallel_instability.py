@@ -177,10 +177,10 @@ class Test_parallel(unittest.TestCase):
 
          f = lambda wrel: real_imag(parallel_wrapper(
              list_to_complex(wrel), kz, kp, betap, t_list, a_list, n_list,
-             q_list, m_list, v_list, method = 'numpy', aol=1/5000))
-         guess = -0.2
+             q_list, m_list, v_list, method = 'numpy', aol=1/5000, mode='L'))
+         guess = 0.2
          freq = scipy.optimize.fsolve(f, real_imag(guess))
-         npt.assert_allclose(freq[0], -0.230978, rtol = 1e-3)
+         npt.assert_allclose(freq[0], 0.230978, rtol = 1e-3)
          npt.assert_allclose(freq[1], -0.0314169, rtol = 1e-3)         
 
     def test_par_wrapper_cyclotron_2(self):
@@ -203,10 +203,10 @@ class Test_parallel(unittest.TestCase):
 
          f = lambda wrel: real_imag(parallel_wrapper(
              list_to_complex(wrel), kz, kp, betap, t_list, a_list, n_list,
-             q_list, m_list, v_list, method = 'numpy', aol=1/5000))
-         guess = -0.3
+             q_list, m_list, v_list, method = 'numpy', aol=1/5000, mode='L'))
+         guess = 0.3
          freq = scipy.optimize.fsolve(f, real_imag(guess))
-         npt.assert_allclose(freq[0], -0.356764, rtol = 1e-3)
+         npt.assert_allclose(freq[0], 0.356764, rtol = 1e-3)
          npt.assert_allclose(freq[1], -0.0398052, rtol = 1e-3)
 
     def test_par_wrapper_cyclotron_3(self):
@@ -229,10 +229,10 @@ class Test_parallel(unittest.TestCase):
 
          f = lambda wrel: real_imag(parallel_wrapper(
              list_to_complex(wrel), kz, kp, betap, t_list, a_list, n_list,
-             q_list, m_list, v_list, method = 'numpy', aol=1/5000))
-         guess = -0.4
+             q_list, m_list, v_list, method = 'numpy', aol=1/5000, mode='L'))
+         guess = 0.4
          freq = scipy.optimize.fsolve(f, real_imag(guess))
-         npt.assert_allclose(freq[0], -0.4721, rtol = 1e-3)
+         npt.assert_allclose(freq[0], 0.4721, rtol = 1e-3)
          npt.assert_allclose(freq[1], 0.0447763, rtol = 1e-3)
 
     def test_par_wrapper_cyclotron_4(self):
@@ -255,10 +255,10 @@ class Test_parallel(unittest.TestCase):
 
          f = lambda wrel: real_imag(parallel_wrapper(
              list_to_complex(wrel), kz, kp, betap, t_list, a_list, n_list,
-             q_list, m_list, v_list, method = 'numpy', aol=1/5000))
-         guess = -0.4
+             q_list, m_list, v_list, method = 'numpy', aol=1/5000, mode='L'))
+         guess = 0.4
          freq = scipy.optimize.fsolve(f, real_imag(guess))
-         npt.assert_allclose(freq[0], -0.58734 , rtol = 1e-3)
+         npt.assert_allclose(freq[0], 0.58734 , rtol = 1e-3)
          npt.assert_allclose(freq[1], -0.00603197, rtol = 1e-3)         
 
     def test_par_wrapper_cyclotron_5(self):
@@ -281,10 +281,10 @@ class Test_parallel(unittest.TestCase):
 
          f = lambda wrel: real_imag(parallel_wrapper(
              list_to_complex(wrel), kz, kp, betap, t_list, a_list, n_list,
-             q_list, m_list, v_list, method = 'numpy', aol=1/5000))
-         guess = -0.4
+             q_list, m_list, v_list, method = 'numpy', aol=1/5000, mode='L'))
+         guess = 0.4
          freq = scipy.optimize.fsolve(f, real_imag(guess))
-         npt.assert_allclose(freq[0], -0.435854, rtol = 1e-3)
+         npt.assert_allclose(freq[0], 0.435854, rtol = 1e-3)
          npt.assert_allclose(freq[1], -0.232166, rtol = 1e-3)         
 if __name__ == '__main__':
     unittest.main()

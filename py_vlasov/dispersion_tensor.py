@@ -1,4 +1,4 @@
-from .util import zp, pade, zp_mp, VlasovException
+from .util import zp, pade, VlasovException
 from .util import (pmass, emass, echarge, permittivity, permeability, cspeed, boltzmann)
 import numpy as np
 import scipy.special
@@ -46,11 +46,9 @@ def f_abn(n, w, kz, tz, tp, vthz, Omega, vz, method='pade'):
         f_zp = pade
     elif method == 'numpy':
         f_zp = zp
-    elif method == 'mpmath':
-        f_zp = zp_mp
     else:
         raise VlasovException("Unreconized method.\n" +
-            "Please choose between 'pade', 'numpy' and 'mpmath'")
+            "Please choose between 'pade' and 'numpy'")
     zeta = f_zeta(w, kz, vz, Omega, vthz, n)
     zp_zeta = f_zp(zeta)
     an_1 = (tp-tz)/tz
