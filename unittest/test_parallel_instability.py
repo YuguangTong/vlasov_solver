@@ -177,7 +177,7 @@ class Test_parallel(unittest.TestCase):
 
          f = lambda wrel: real_imag(parallel_wrapper(
              list_to_complex(wrel), kz, kp, betap, t_list, a_list, n_list,
-             q_list, m_list, v_list, method = 'numpy', aol=1/5000, mode='L'))
+             q_list, m_list, v_list, method = 'numpy', aol=1/5000, pol='L'))
          guess = 0.2
          freq = scipy.optimize.fsolve(f, real_imag(guess))
          npt.assert_allclose(freq[0], 0.230978, rtol = 1e-3)
@@ -203,7 +203,7 @@ class Test_parallel(unittest.TestCase):
 
          f = lambda wrel: real_imag(parallel_wrapper(
              list_to_complex(wrel), kz, kp, betap, t_list, a_list, n_list,
-             q_list, m_list, v_list, method = 'numpy', aol=1/5000, mode='L'))
+             q_list, m_list, v_list, method = 'numpy', aol=1/5000, pol='L'))
          guess = 0.3
          freq = scipy.optimize.fsolve(f, real_imag(guess))
          npt.assert_allclose(freq[0], 0.356764, rtol = 1e-3)
@@ -229,7 +229,7 @@ class Test_parallel(unittest.TestCase):
 
          f = lambda wrel: real_imag(parallel_wrapper(
              list_to_complex(wrel), kz, kp, betap, t_list, a_list, n_list,
-             q_list, m_list, v_list, method = 'numpy', aol=1/5000, mode='L'))
+             q_list, m_list, v_list, method = 'numpy', aol=1/5000, pol='L'))
          guess = 0.4
          freq = scipy.optimize.fsolve(f, real_imag(guess))
          npt.assert_allclose(freq[0], 0.4721, rtol = 1e-3)
@@ -255,7 +255,7 @@ class Test_parallel(unittest.TestCase):
 
          f = lambda wrel: real_imag(parallel_wrapper(
              list_to_complex(wrel), kz, kp, betap, t_list, a_list, n_list,
-             q_list, m_list, v_list, method = 'numpy', aol=1/5000, mode='L'))
+             q_list, m_list, v_list, method = 'numpy', aol=1/5000, pol='L'))
          guess = 0.4
          freq = scipy.optimize.fsolve(f, real_imag(guess))
          npt.assert_allclose(freq[0], 0.58734 , rtol = 1e-3)
@@ -281,7 +281,7 @@ class Test_parallel(unittest.TestCase):
 
          f = lambda wrel: real_imag(parallel_wrapper(
              list_to_complex(wrel), kz, kp, betap, t_list, a_list, n_list,
-             q_list, m_list, v_list, method = 'numpy', aol=1/5000, mode='L'))
+             q_list, m_list, v_list, method = 'numpy', aol=1/5000, pol='L'))
          guess = 0.4
          freq = scipy.optimize.fsolve(f, real_imag(guess))
          npt.assert_allclose(freq[0], 0.435854, rtol = 1e-3)

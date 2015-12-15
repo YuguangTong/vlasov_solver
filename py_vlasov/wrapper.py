@@ -103,7 +103,7 @@ def oblique_wrapper(wrel, kpar, kperp, betap, t_list, a_list, n_list, q_list, m_
         m_s \equiv m_s/m_p, m_p --> proton mass.
     v_list: dimensionless bulk drift.
         v_{ds} = v_{ds}/v_A, where v_A --> Alfven speed
-    mode: one of 'r', 'l', 's', stands for right-handed (EM).
+    pol: polarization. one of 'r', 'l', 's', stands for right-handed (EM).
         left-handed, and electrostatic.
 
     returns
@@ -120,7 +120,7 @@ def oblique_wrapper(wrel, kpar, kperp, betap, t_list, a_list, n_list, q_list, m_
 
 def parallel_wrapper(wrel, kpar, kperp, betap, t_list, a_list,
                      n_list, q_list, m_list, v_list, n = 10,
-                     method = 'pade', aol=1/5000, mode = 'R'):
+                     method = 'pade', aol=1/5000, pol = 'R'):
     """
     Consider parallel wavenumber vectors, take in parameters 
     for a multiple-component plasma and return the determinant 
@@ -151,7 +151,7 @@ def parallel_wrapper(wrel, kpar, kperp, betap, t_list, a_list,
     n: number of Bessel functions to sum over
     method: how to compute the plasma dispersion funciton.
     aol: v_a/c. 
-    mode: wave nature
+    pol: wave polarization
           'R' --> right-hand-polarized EM wave
           'L' --> left-hand-polarized EM wave
           'S' --> electrostatic wave
@@ -167,18 +167,18 @@ def parallel_wrapper(wrel, kpar, kperp, betap, t_list, a_list,
     inp = input_gen(wrel, kpar, kperp, betap, t_list, a_list,
                     n_list, q_list, m_list, v_list, n, method, aol)
     param = list(map(list, zip(*inp)))
-    if mode == 'R' or mode == 'r':
+    if pol == 'R' or pol == 'r':
         return r_wave_eqn(param)
-    elif mode == 'L' or mode == 'l':
+    elif pol == 'L' or pol == 'l':
         return l_wave_eqn(param)
-    elif mode == 'S' or mode == 's':
+    elif pol == 'S' or pol == 's':
         return static_wave_eqn(param)
     else:
         raise VlasovException('Not a proper wave mode. Choose between r, l and s.')
 
 def disp_det(wrel, kpar, kperp, betap, t_list, a_list,
                      n_list, q_list, m_list, v_list, n = 10,
-                     method = 'pade', aol=1/5000, mode='R'):
+                     method = 'pade', aol=1/5000, pol='R'):
     """
     Consider parallel or oblique waves propagating in
     a multiple-component plasma and return the determinant 
@@ -209,7 +209,7 @@ def disp_det(wrel, kpar, kperp, betap, t_list, a_list,
     n: number of Bessel functions to sum over
     method: how to compute the plasma dispersion funciton.
     aol: v_a/c. 
-    mode: parallel wave classification
+    pol: parallel wave polarization
           'R' --> right-hand-polarized EM wave
           'L' --> left-hand-polarized EM wave
           'S' --> electrostatic wave
@@ -222,7 +222,7 @@ def disp_det(wrel, kpar, kperp, betap, t_list, a_list,
     if kperp == 0:
         return  parallel_wrapper(wrel, kpar, kperp, betap, t_list, a_list,
                                  n_list, q_list, m_list, v_list, n = n,
-                                 method = method, aol=aol, mode=mode)
+                                 method = method, aol=aol, pol=pol)
     else:
         return oblique_wrapper(wrel, kpar, kperp, betap, t_list, a_list,
                                n_list, q_list, m_list, v_list, n = n,

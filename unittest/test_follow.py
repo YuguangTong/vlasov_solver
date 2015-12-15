@@ -2,8 +2,7 @@ import numpy.testing as npt
 import numpy as np
 import unittest
 from py_vlasov.util import real_imag, kzkp
-from py_vlasov.follow_parameter import simple_follow_fn
-from py_vlasov.new_follow_parameter import (
+from py_vlasov.follow_parameter import (
     follow_kz, follow_kp, follow_k, follow_angle, follow_beta,
     follow_temperature, follow_anisotropy, follow_drift, follow_density)
 
@@ -31,7 +30,6 @@ class Test_follow(unittest.TestCase):
         
         param = [kz, kp, betap, t_list, a_list, n_list, q_list,
                  m_list, v_list, n, method, aol]
-        guess_fn = simple_follow_fn
         
         target_kz = 0.1
         log_inc = 0.2
