@@ -7,47 +7,6 @@ import matplotlib.pyplot as plt
 #---------------------------------------------#
 # consider expansion to include changes in mass
 #---------------------------------------------#
-def follow_eigen_freq(seed_freq, target_param, target_value,
-                      param, num, show_plot=False):
-    """
-    Follow the frequency of an eigenmode of a plasma along a
-    parameter ('target_param') till the parameter reach a
-    target value ('target_val'). Return the frequency at the new
-    set of plasma parameters.
-    
-    parameters
-    ----------
-    seed_freq: eigen mode frequency of the initial plasma system
-    target_param: the parameter to follow along. Should be a string.
-    target_value: the value of the target parameter
-    
-    param: a set of dimensionless plasma of which the seed_freq is an 
-           eigen frequency. It contains the following list
-           [kpar, kperp, betap, t_list, a_list, n_list, q_list, m_list, v_list,
-            n, method, aol]
-    num: number of steps to search
-    guess_fn: a function to guess the next frequency
-    show_plot: whether make a plot for the frequencies stepped through
-    """
-    if target_param == 'kz':
-        return follow_kz(seed_freq, target_value,param, num)
-    elif target_parm == 'kp':
-        return follow_kp(seed_freq, target_param, target_value, param, num)
-    elif target_parm == 'k':
-        return follow_k(seed_freq, target_value, param, num)
-    elif target_parm == 'angle':
-        return follow_angle(seed_freq, target_value, param, num)
-    elif target_parm == 'beta':
-        return follow_beta(seed_freq, target_value, param, num)
-    elif target_parm == 'temperature':
-        return follow_temperature(seed_freq, target_value, param, num)
-    elif target_parm == 'anisotropy':
-        return follow_anisotropy(seed_freq, target_value, param, num)
-    elif target_parm == 'drift':
-        return follow_drift(seed_freq, target_value, param, num)
-    else:
-        raise VlasovException('{0} is not a valid parameter to vary'.
-                              format(target_param))
 
 def generate_1d_steps(start, end, log_incrmt, lin_incrmt, incrmt_method):
     """
@@ -132,6 +91,43 @@ def generate_steps(start, end, log_incrmt=0.1, lin_incrmt=0.1, incrmt_method = '
         assert hasattr(start, '__iter__') and hasattr(end, '__iter__')
         return generate_2d_steps(start, end, log_incrmt,
                                  lin_incrmt, incrmt_method)
+
+def solve_disp(guess, kz, kp, beta, t_list, a_list,
+               n_list, q_list, m_list, v_list,
+               n, method, aol, pol):
+    """
+    Solve dispersion relation given plasma parameters 
+    and an initial guess.
+
+    We apply an artificial Doppler shift velocity vd
+    in the case when the eigenfrequency is so small that
+    numberical solver cannot correctly determine solution.
+
+    """
+    vd, shift_freq = 0, 0
+    if np.abs(guess) < 1e-2:
+        shift_freq = 0.1
+        guess += shift_freq
+        vd = shift_freq * np.sqrt(beta)/kz
+    temp_v_list = np.array(v_list) + vd
+    f = lambda wrel: real_imag(disp_det(
+        list_to_complex(wrel), kz, kp, beta, t_list, a_list,
+        n_list, q_list, m_list, temp_v_list, n=n, method=method,
+        aol=aol, pol=pol))
+    freq = scipy.optimize.fsolve(f, real_imag(guess))
+    return list_to_complex(freq) - shift_freq
+
+    # vd, shift_freq = 0, 0
+    # if np.abs(guess) < 1e-3:
+    #     vd = .1
+    #     shift_freq = vd * kz/np.sqrt(beta)
+    # temp_v_list = np.array(v_list) + vd
+    # f = lambda wrel: real_imag(disp_det(
+    #     list_to_complex(wrel), kz, kp, beta, t_list, a_list,
+    #     n_list, q_list, m_list, temp_v_list, n=n, method=method,
+    #     aol=aol, pol=pol))
+    # freq = scipy.optimize.fsolve(f, real_imag(guess))
+    # return list_to_complex(freq) - shift_freq
     
 def follow_kz(seed_freq, target_value, param, pol='r',  show_plot=False,
               log_incrmt=0.1, lin_incrmt=0.1, incrmt_method = 'log'):
@@ -149,12 +145,9 @@ def follow_kz(seed_freq, target_value, param, pol='r',  show_plot=False,
     freq_lst = []
     guess = seed_freq
     for kz in kz_list:
-        f = lambda wrel: real_imag(disp_det(
-            list_to_complex(wrel), kz, kp, beta, t_list, a_list,
-            n_list, q_list, m_list, v_list, n=n, method=method, aol=aol,
-            pol=pol))
-        freq = scipy.optimize.fsolve(f, real_imag(guess))
-        guess = list_to_complex(freq)
+        guess = solve_disp(guess, kz, kp, beta, t_list, a_list,
+                           n_list, q_list, m_list, v_list,
+                           n, method, aol, pol)
         freq_lst += [guess]
     if show_plot:
         plt.plot(kz_list, np.abs(np.real(freq_lst)), 'o-', markersize= 2)
@@ -183,12 +176,9 @@ def follow_kp(seed_freq, target_value, param, pol='r', show_plot=False,
     freq_lst = []
     guess = seed_freq
     for kp in kp_list:
-        f = lambda wrel: real_imag(disp_det(
-            list_to_complex(wrel), kz, kp, beta, t_list, a_list,
-            n_list, q_list, m_list, v_list, n=n, method=method, aol=aol,
-            pol=pol))
-        freq = scipy.optimize.fsolve(f, real_imag(guess))
-        guess = list_to_complex(freq)
+        guess = solve_disp(guess, kz, kp, beta, t_list, a_list,
+                           n_list, q_list, m_list, v_list,
+                           n, method, aol, pol)
         freq_lst += [guess]
     if show_plot:
         plt.plot(kp_list, np.abs(np.real(freq_lst)), 'o-', markersize= 2)
@@ -202,16 +192,68 @@ def follow_kp(seed_freq, target_value, param, pol='r', show_plot=False,
                  v_list, n, method, aol)
     return (guess, new_param, freq_lst)
 
-def follow_angle(seed_freq, target_value, param, pol='r', show_plot=False):
+def follow_angle(seed_freq, target_value, param, pol='r', show_plot=False,
+                 log_incrmt=0.1, lin_incrmt=0.1, incrmt_method = 'log'):
     """
-    to implement
+    follow mode along angles
     """
     
     return 0
 
+def follow_kzkp(seed_freq, target_value, param, pol='r', show_plot=False,
+                 log_incrmt=0.1, lin_incrmt=0.1, incrmt_method = 'log'):
+    """
+    follow mode in wavenumber plane by incrementally vary
+    kz and kp in turns.
+
+    """
+    (kz, kp, beta, t_list, a_list, n_list, q_list, m_list,
+     v_list, n, method, aol) = param
+    target_kz, target_kp = target_value
+    delt_kz, delt_kp = target_kz- kz, target_kp- kp
+
+    ## see if we can reduce to follow along kz or follow along kp cases.
+    
+    if delt_kz == 0:
+        return follow_kp(seed_freq, target_value, param, pol=pol,
+                         show_plot=show_plot, log_incrmt=log_incrmt,
+                         lin_incrmt=lin_incrmt, incrmt_method = incrmt_method)
+    elif delt_kp == 0:
+        return follow_kp(seed_freq, target_value, param, pol=pol,
+                         show_plot=show_plot, log_incrmt=log_incrmt,
+                         lin_incrmt=lin_incrmt, incrmt_method = incrmt_method)
+    
+    ## now both kz and kp need to vary. We vary both of them in log scale.
+    
+    seed_k = np.sqrt(kz **2 + kp **2)
+    delt_k = np.sqrt(delt_kz **2 + delt_kp **2)
+
+    ## a list of k to step through
+    
+    k_inc_list = generate_steps(seed_k, seed_k + delt_k, log_incrmt=log_incrmt,
+                            lin_incrmt=lin_incrmt,
+                            incrmt_method = incrmt_method) - seed_k
+    kz_k = delt_kz/delt_k
+    kp_k = delt_kp/delt_k
+    freq_lst = []
+    guess = seed_freq
+
+    for k_inc in k_inc_list:
+        kz_loc = kz + kz_k * k_inc
+        kp_loc = kp + kp_k * k_inc
+        guess = solve_disp(guess, kz_loc, kp_loc, beta, t_list, a_list,
+                           n_list, q_list, m_list, v_list,
+                           n, method, aol, pol)
+        freq_lst += [guess]
+        
+    new_param = (target_kz, target_kp, beta, t_list, a_list, n_list,
+                 q_list, m_list, v_list, n, method, aol)
+    return (guess, new_param, freq_lst)        
+
 def follow_k(seed_freq, target_value, param, pol='r', show_plot=False,
              log_incrmt=0.1, lin_incrmt=0.1, incrmt_method = 'log'):
     """
+    follow mode along wavenumber parameter.
     """    
     (kz, kp, beta, t_list, a_list, n_list, q_list, m_list,
      v_list, n, method, aol) = param
@@ -225,12 +267,9 @@ def follow_k(seed_freq, target_value, param, pol='r', show_plot=False,
     guess = seed_freq
     for k in k_list:
         kz, kp = k * kz_k, k * kp_k
-        f = lambda wrel: real_imag(disp_det(
-            list_to_complex(wrel), kz, kp, beta, t_list, a_list,
-            n_list, q_list, m_list, v_list, n=n, method=method, aol=aol,
-            pol=pol))
-        freq = scipy.optimize.fsolve(f, real_imag(guess))
-        guess = list_to_complex(freq)
+        guess = solve_disp(guess, kz, kp, beta, t_list, a_list,
+                           n_list, q_list, m_list, v_list,
+                           n, method, aol, pol)
         freq_lst += [guess]
     if show_plot:
         plt.plot(k_list, np.abs(np.real(freq_lst)), 'o-', markersize= 2)
@@ -260,12 +299,9 @@ def follow_beta(seed_freq, target_value, param, pol='r', show_plot=False,
     freq_lst = []
     guess = seed_freq
     for beta in beta_list:
-        f = lambda wrel: real_imag(disp_det(
-            list_to_complex(wrel), kz, kp, beta, t_list, a_list,
-            n_list, q_list, m_list, v_list, n=n, method=method, aol=aol,
-            pol=pol))
-        freq = scipy.optimize.fsolve(f, real_imag(guess))
-        guess = list_to_complex(freq)
+        guess = solve_disp(guess, kz, kp, beta, t_list, a_list,
+                           n_list, q_list, m_list, v_list,
+                           n, method, aol, pol)
         freq_lst += [guess]
     if show_plot:
         plt.plot(beta_list, np.abs(np.real(freq_lst)), 'o-', markersize= 2)
@@ -296,12 +332,9 @@ def follow_temperature(seed_freq, target_value, param, pol='r', show_plot=False,
     freq_lst = []
     guess = seed_freq
     for t_list in t_list_steps:
-        f = lambda wrel: real_imag(disp_det(
-            list_to_complex(wrel), kz, kp, beta, t_list, a_list,
-            n_list, q_list, m_list, v_list, n=n, method=method, aol=aol,
-            pol=pol))
-        freq = scipy.optimize.fsolve(f, real_imag(guess))
-        guess = list_to_complex(freq)
+        guess = solve_disp(guess, kz, kp, beta, t_list, a_list,
+                           n_list, q_list, m_list, v_list,
+                           n, method, aol, pol)
         freq_lst += [guess]
     if show_plot:
         plt.plot(np.abs(np.real(freq_lst)),'o-', markersize= 2)
@@ -329,12 +362,9 @@ def follow_anisotropy(seed_freq, target_value, param, pol='r', show_plot=False,
     freq_lst = []
     guess = seed_freq
     for a_list in a_list_steps:
-        f = lambda wrel: real_imag(disp_det(
-            list_to_complex(wrel), kz, kp, beta, t_list, a_list,
-            n_list, q_list, m_list, v_list, n=n, method=method, aol=aol,
-            pol=pol))
-        freq = scipy.optimize.fsolve(f, real_imag(guess))
-        guess = list_to_complex(freq)
+        guess = solve_disp(guess, kz, kp, beta, t_list, a_list,
+                           n_list, q_list, m_list, v_list,
+                           n, method, aol, pol)
         freq_lst += [guess]
     if show_plot:
         plt.plot(a_list_steps[:,0], np.abs(np.real(freq_lst)),
@@ -382,12 +412,9 @@ def follow_drift(seed_freq, target_value, param, pol='r', show_plot=False,
     freq_lst = []
     guess = seed_freq
     for v_list in v_list_steps:
-        f = lambda wrel: real_imag(disp_det(
-            list_to_complex(wrel), kz, kp, beta, t_list, a_list,
-            n_list, q_list, m_list, v_list, n=n, method=method, aol=aol,
-            pol=pol))
-        freq = scipy.optimize.fsolve(f, real_imag(guess))
-        guess = list_to_complex(freq)
+        guess = solve_disp(guess, kz, kp, beta, t_list, a_list,
+                           n_list, q_list, m_list, v_list,
+                           n, method, aol, pol)
         freq_lst += [guess]
     if show_plot:
         plt.plot(np.abs(np.real(freq_lst)), 'o-', markersize= 2)
@@ -420,12 +447,9 @@ def follow_density(seed_freq, target_value, param, pol='r', show_plot=False,
     freq_lst = []
     guess = seed_freq
     for n_list in n_list_steps:
-        f = lambda wrel: real_imag(disp_det(
-            list_to_complex(wrel), kz, kp, beta, t_list, a_list,
-            n_list, q_list, m_list, v_list, n=n, method=method, aol=aol,
-            pol=pol))
-        freq = scipy.optimize.fsolve(f, real_imag(guess))
-        guess = list_to_complex(freq)
+        guess = solve_disp(guess, kz, kp, beta, t_list, a_list,
+                           n_list, q_list, m_list, v_list,
+                           n, method, aol, pol)
         freq_lst += [guess]
     if show_plot:
         plt.plot(np.abs(np.real(freq_lst)), 'o-', markersize= 2)
