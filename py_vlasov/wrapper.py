@@ -53,6 +53,10 @@ def input_gen(wrel, kpar, kperp, betap, t_list, \
     tp_par = betap * b0**2 / (2 * permeability * nproton * boltzmann)
     omega_p = echarge * b0/pmass # proton gyrofrequency
     vthp_par = np.sqrt(2 * boltzmann * tp_par/pmass) # proton parallel thermal speed
+    
+    # assume non-relativistic
+    assert vthp_par < 3e6
+
     rhop_par = vthp_par/omega_p
     w = wrel * omega_p
     kz = kpar/rhop_par

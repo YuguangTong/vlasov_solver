@@ -148,7 +148,7 @@ def follow_kz(seed_freq, target_value, param, pol='r',  show_plot=False,
         guess = solve_disp(guess, kz, kp, beta, t_list, a_list,
                            n_list, q_list, m_list, v_list,
                            n, method, aol, pol)
-        freq_lst += [guess]
+        freq_lst.append(guess)
     if show_plot:
         plt.plot(kz_list, np.abs(np.real(freq_lst)), 'o-', markersize= 2)
         plt.xscale('log')
@@ -179,7 +179,7 @@ def follow_kp(seed_freq, target_value, param, pol='r', show_plot=False,
         guess = solve_disp(guess, kz, kp, beta, t_list, a_list,
                            n_list, q_list, m_list, v_list,
                            n, method, aol, pol)
-        freq_lst += [guess]
+        freq_lst.append(guess)
     if show_plot:
         plt.plot(kp_list, np.abs(np.real(freq_lst)), 'o-', markersize= 2)
         plt.xscale('log')
@@ -244,7 +244,7 @@ def follow_kzkp(seed_freq, target_value, param, pol='r', show_plot=False,
         guess = solve_disp(guess, kz_loc, kp_loc, beta, t_list, a_list,
                            n_list, q_list, m_list, v_list,
                            n, method, aol, pol)
-        freq_lst += [guess]
+        freq_lst.append(guess)
         
     new_param = (target_kz, target_kp, beta, t_list, a_list, n_list,
                  q_list, m_list, v_list, n, method, aol)
@@ -270,7 +270,7 @@ def follow_k(seed_freq, target_value, param, pol='r', show_plot=False,
         guess = solve_disp(guess, kz, kp, beta, t_list, a_list,
                            n_list, q_list, m_list, v_list,
                            n, method, aol, pol)
-        freq_lst += [guess]
+        freq_lst.append(guess)
     if show_plot:
         plt.plot(k_list, np.abs(np.real(freq_lst)), 'o-', markersize= 2)
         plt.xscale('log')
@@ -302,7 +302,7 @@ def follow_beta(seed_freq, target_value, param, pol='r', show_plot=False,
         guess = solve_disp(guess, kz, kp, beta, t_list, a_list,
                            n_list, q_list, m_list, v_list,
                            n, method, aol, pol)
-        freq_lst += [guess]
+        freq_lst.append(guess)
     if show_plot:
         plt.plot(beta_list, np.abs(np.real(freq_lst)), 'o-', markersize= 2)
         plt.xscale('log')
@@ -335,7 +335,7 @@ def follow_temperature(seed_freq, target_value, param, pol='r', show_plot=False,
         guess = solve_disp(guess, kz, kp, beta, t_list, a_list,
                            n_list, q_list, m_list, v_list,
                            n, method, aol, pol)
-        freq_lst += [guess]
+        freq_lst.append(guess)
     if show_plot:
         plt.plot(np.abs(np.real(freq_lst)),'o-', markersize= 2)
         plt.yscale('log')
@@ -365,7 +365,7 @@ def follow_anisotropy(seed_freq, target_value, param, pol='r', show_plot=False,
         guess = solve_disp(guess, kz, kp, beta, t_list, a_list,
                            n_list, q_list, m_list, v_list,
                            n, method, aol, pol)
-        freq_lst += [guess]
+        freq_lst.append(guess)
     if show_plot:
         plt.plot(a_list_steps[:,0], np.abs(np.real(freq_lst)),
                  'o-', markersize= 2)
@@ -415,7 +415,7 @@ def follow_drift(seed_freq, target_value, param, pol='r', show_plot=False,
         guess = solve_disp(guess, kz, kp, beta, t_list, a_list,
                            n_list, q_list, m_list, v_list,
                            n, method, aol, pol)
-        freq_lst += [guess]
+        freq_lst.append(guess)
     if show_plot:
         plt.plot(np.abs(np.real(freq_lst)), 'o-', markersize= 2)
         plt.xscale('log')
@@ -450,7 +450,7 @@ def follow_density(seed_freq, target_value, param, pol='r', show_plot=False,
         guess = solve_disp(guess, kz, kp, beta, t_list, a_list,
                            n_list, q_list, m_list, v_list,
                            n, method, aol, pol)
-        freq_lst += [guess]
+        freq_lst.append(guess)
     if show_plot:
         plt.plot(np.abs(np.real(freq_lst)), 'o-', markersize= 2)
         plt.yscale('log')
