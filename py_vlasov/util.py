@@ -54,13 +54,14 @@ def zp(z):
     """
     Plasma dispersion function
     Utilize the faddeeva function, wofz, in scipy.special module.
-
+    Note 1.7724538509055159 = sqrt(pi)
+    
     Keyword arguments:
     z: dimensionless argument of the plasma dispersion function.
     
     Return the value of Zp(z)
     """
-    return 1.j * np.sqrt(np.pi) * scipy.special.wofz(z)
+    return 1.7724538509055159j * scipy.special.wofz(z)
     
 def zpd(x):
     """
@@ -183,3 +184,22 @@ def nullspace(A, atol=1e-13, rtol=0):
     # ns = vh[nnz:].conj().T
     ns = vh[2].conj()
     return ns
+
+def do_cprofile(func):
+    """
+    wrapper of func to do profile 
+    """
+
+    import cProfile, pstats
+    
+    def profiled_func(*args, **kwargs):
+        profile = cProfile.Profile()
+        try:
+            profile.enable()
+            result = func(*args, **kwargs)
+            profile.disable()
+            return result
+        finally:
+            ps = pstats.Stats(profile)
+            ps.strip_dirs().sort_stats('time').print_stats(20)
+    return profiled_func

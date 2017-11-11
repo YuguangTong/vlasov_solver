@@ -1,6 +1,6 @@
 from .util import zp, pade, VlasovException, real_imag
 from .util import (pmass, emass, echarge, permittivity, permeability, cspeed, boltzmann)
-from .dispersion_tensor import f_d
+from .dispersion_tensor import f_d, f_d_vec
 from .parallel_mode import r_wave_eqn, l_wave_eqn, static_wave_eqn
 from scipy import linalg
 import numpy as np
@@ -75,11 +75,11 @@ def input_gen(wrel, kpar, kperp, betap, t_list, \
         vths_par = np.sqrt(2 * boltzmann * ts_par/ms) 
         vths_perp = np.sqrt(2 * boltzmann * ts_perp/ms)
         species = [n, w, kz, kp, wps, ts_par, ts_perp, vths_par, vths_perp, omegas, vds, method]
-        inp += [species]
+        inp.append(species)
     return inp
     
     
-def oblique_wrapper(wrel, kpar, kperp, betap, t_list, a_list, n_list, q_list, m_list, v_list, n = 10, method = 'pade', aol=1/5000):
+def oblique_wrapper(wrel, kpar, kperp, betap, t_list, a_list, n_list, q_list, m_list, v_list, n = 10, method = 'pade', aol=1/5000, vec = True):
     """
     Consider oblique wavenumber vectors, take in parameters 
     for a multiple-component plasma and return the determinant 
@@ -119,8 +119,10 @@ def oblique_wrapper(wrel, kpar, kperp, betap, t_list, a_list, n_list, q_list, m_
     omega_p = inp[0][9]
     # the 0th component is proton. the 9th term is gyrofrequency
     param = list(map(list, zip(*inp)))
-    res =  linalg.det(f_d(param) * aol**2 /omega_p**2)
-    return res
+    if vec:
+        return linalg.det(f_d_vec(param) * aol**2 /omega_p**2)
+    else:
+        return linalg.det(f_d(param) * aol**2 /omega_p**2)
 
 def parallel_wrapper(wrel, kpar, kperp, betap, t_list, a_list,
                      n_list, q_list, m_list, v_list, n = 10,

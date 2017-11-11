@@ -38,6 +38,7 @@ def generate_1d_steps(start, end, log_incrmt, lin_incrmt, incrmt_method):
         num_step = 1 + round(np.abs(start - end)/lin_incrmt)
         num_step = round(num_step)
         return np.linspace(start, end, num=num_step)
+    raise NotImplementedError('Does not support increment method {0}.'.format(incrmt_method))
     
 def generate_2d_steps(start, end, log_incrmt, lin_incrmt, incrmt_method):
     """
@@ -76,6 +77,7 @@ def generate_2d_steps(start, end, log_incrmt, lin_incrmt, incrmt_method):
         res = np.array([np.linspace(start[i], end[i], num=num_step)
                         for i in range(len(start))])       
         return res.T
+    raise NotImplementedError('Does not support increment method {0}.'.format(incrmt_method))
 
 def generate_steps(start, end, log_incrmt=0.1, lin_incrmt=0.1, incrmt_method = 'linear'):
     """

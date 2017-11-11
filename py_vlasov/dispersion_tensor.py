@@ -23,6 +23,25 @@ def f_zeta(w, kz, vz, Omega, vthz, n):
     """
     return (w-kz*vz-n*Omega)/(kz*vthz)
 
+def f_zeta_arr(w, kz, vz, Omega, vthz, n_arr):
+    """
+    Calculate the argument of plasma dispersion function.
+    
+    Keyword arguments
+    -----------------
+    w: frequency (rad/s)
+    kz: parallel wavenumber (rad/m)
+    vz: parallel drift of the particle species (m/s)
+    Omega: gyrofrequency of the species (rad/s)
+    vthz: parallel thermal speed (m/s)
+    n: a numpy array of resonance numbers
+    
+    Return
+    ------
+    A numpy array of \zeta_{ns} for n in n_arr
+    """
+    return (w-kz*vz-n_arr*Omega)/(kz*vthz)
+
 def f_abn(n, w, kz, tz, tp, vthz, Omega, vz, method='pade'):
     """
     Calculate the coefficient \A_n and \B_n, as defined in Stix(1992).
@@ -58,6 +77,47 @@ def f_abn(n, w, kz, tz, tp, vthz, Omega, vz, method='pade'):
     bn_2 = 1/kz * (w-n*Omega)/(kz*vthz)*((w-kz*vz-n*Omega)*tp + n*Omega*tz)/tz
     bn = bn_1 + bn_2 * zp_zeta
     return an, bn   
+
+def f_abn_arr(n_arr, w, kz, tz, tp, vthz, Omega, vz, method='pade'):
+    """
+    Calculate the coefficient \A_n and \B_n, as defined in Stix(1992).
+    
+    Keyword arguments
+    -----------------
+    n_arr: a numpy array of resonance numbers
+    w: frequency (rad/s)
+    kz: parallel wavenumber (rad/m)
+    tp: perpendicular temperature (of the species) (Joule)
+    tz: parallel temperature (Joule)
+    vthz: parallel thermal speed (m/s)
+    Omega: gyrofrequency (rad/s)
+    vz: parallel drift (m/s)
+    
+    Return
+    ------
+    A_n and B_n (multiplied by w, omega)
+    """
+    if method == 'pade':
+        f_zp = pade
+    elif method == 'numpy':
+        f_zp = zp
+    else:
+        raise VlasovException("Unreconized method.\n" +
+            "Please choose between 'pade' and 'numpy'")
+    zeta_arr = f_zeta_arr(w, kz, vz, Omega, vthz, n_arr)
+    zp_zeta_arr = np.array([f_zp(zeta) for zeta in zeta_arr])
+    tptz = tp/tz
+    an_1 = tptz - 1
+#     an_2 = 1/(kz * vthz) * ((w - kz*vz - n*Omega)*tp + n*Omega*tz)/tz
+    an_2_arr = 1/(kz * vthz) * ((w - kz*vz)*tp/tz - n_arr*Omega*an_1)
+    an_arr = an_1 + an_2_arr * zp_zeta_arr
+#     bn_1 = 1/kz * ((w-n*Omega)*tp - (kz*vz-n*Omega)*tz)/tz
+    bn_1_arr = 1/kz * ((w*tptz-kz*vz) - n_arr*Omega*an_1)
+#     bn_2 = 1/kz * (w-n*Omega)/(kz*vthz)*((w-kz*vz-n*Omega)*tp + n*Omega*tz)/tz
+    bn_2_arr = (w-n_arr*Omega)/kz * an_2_arr
+#     bn = bn_1 + bn_2 * zp_zeta
+    bn_arr = bn_1_arr + bn_2_arr * zp_zeta_arr
+    return an_arr, bn_arr
 
 def f_lambda(kp, vthp, Omega):
     """
@@ -113,6 +173,44 @@ def f_yn(n, w, kz, kp, tz, tp, vthz, vthp, Omega, vz, method = 'pade'):
     y[2, 2] = 2*(w - n*Omega)/(kz * vthp**2) * i_n * bn
     return y
 
+def f_yn_arr(n_arr, w, kz, kp, tz, tp, vthz, vthp, Omega, vz, method = 'pade'):
+    """
+    Calculate Sum_n(tensor Y_n) as defined in 'Waves in plamas' (p 258, Stix 1992)
+    
+    Keyword arguments
+    -----------------
+    n_arr: a numpy array of orders of expansion (resonance numbers)
+    w: frequency
+    kz: parallel wavenumber
+    kp: perpendicular wavenumber
+    tp: perpendicular temperature
+    tz: parallel temperature
+    vthz: parallel thermal speed
+    vthp: perpendicular thermal speed
+    Omega: gyrofrequency
+    vz: species drift
+    
+    Return
+    ------
+    return tensor Y_n (times w)
+    """
+    
+    lamb = f_lambda(kp, vthp, Omega)
+    i_n_arr = np.array([scipy.special.iv(n, lamb) for n in n_arr])
+    i_np_arr = 0.5 * np.array([(scipy.special.iv(n-1, lamb) + scipy.special.iv(n+1, lamb)) for n in n_arr])
+    an_arr, bn_arr = f_abn_arr(n_arr, w, kz, tz, tp, vthz, Omega, vz, method)
+    y = np.zeros((3, 3), dtype = np.cfloat)
+    y[0, 0] = np.sum(n_arr**2 * i_n_arr * an_arr) / lamb
+    y[0, 1] = -1j * np.sum(n_arr * (i_n_arr - i_np_arr) * an_arr)
+    y[0, 2] = kp/Omega/lamb * np.sum(n_arr * i_n_arr * bn_arr)
+    y[1, 0] = -y[0, 1]
+    y[1, 1] = np.sum((n_arr**2/lamb * i_n_arr + 2*lamb * (i_n_arr - i_np_arr)) * an_arr)
+    y[1, 2] = 1j * kp/Omega * np.sum((i_n_arr - i_np_arr) * bn_arr)
+    y[2, 0] = y[0, 2]
+    y[2, 1] = -y[1, 2]
+    y[2, 2] = 2/(kz * vthp**2) * np.sum((w - n_arr*Omega) * i_n_arr * bn_arr)
+    return y
+
 def f_chi(n, w, kz, kp, wp, tz, tp, vthz, vthp, Omega, vz, method = 'pade'):
     """
     Calculate the susceptibility tensor \chi
@@ -138,11 +236,37 @@ def f_chi(n, w, kz, kp, wp, tz, tp, vthz, vthp, Omega, vz, method = 'pade'):
     chi_tensor = np.zeros((3, 3), dtype = np.cfloat)
     chi_tensor[2, 2] = 2 * wp**2 * w/ (kz * vthp**2) * vz
     lamb = f_lambda(kp, vthp, Omega)
-    # y_sum = np.sum(np.array([f_yn(i, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method) \
-    #                          +f_yn(-i, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method) \
-    #                          for i in np.arange(1, n+1)]), axis=0)
-    # y_sum += f_yn(0, w, kz, kp, tp, tz, vthz, vthp, Omega, vz, method)
     y_sum = np.sum(np.array([f_yn(i, w, kz, kp, tz, tp, vthz, vthp, Omega, vz, method) for i in np.arange(-n, n+1)]), axis=0)
+    chi_tensor += wp**2 * np.exp(-lamb) * y_sum
+    return chi_tensor
+
+def f_chi_vec(n, w, kz, kp, wp, tz, tp, vthz, vthp, Omega, vz, method = 'pade'):
+    """
+    Calculate the susceptibility tensor \chi
+    
+    Keyword arguments
+    -----------------
+    n: number of terms to sum over
+    w: frequency
+    kz: parallel wavenumber
+    kp: perpendicular wavenumber
+    wp: plasma frequency of the species
+    tz: parallel temperature
+    tp: perpendicular temperature
+    vthz: parallel thermal speed
+    vthp: perpendicular thermal speed
+    Omega: gyrofrequency
+    vz: parallel drift
+    
+    Return
+    ------
+    Return the susceptibility tensor \chi for the species (times w^2)
+    """
+    chi_tensor = np.zeros((3, 3), dtype = np.cfloat)
+    chi_tensor[2, 2] = 2 * wp**2 * w/ (kz * vthp**2) * vz
+    lamb = f_lambda(kp, vthp, Omega)
+    n_arr = np.arange(-n, n+1)
+    y_sum = f_yn_arr(n_arr, w, kz, kp, tz, tp, vthz, vthp, Omega, vz, method)
     chi_tensor += wp**2 * np.exp(-lamb) * y_sum
     return chi_tensor
 
@@ -161,6 +285,23 @@ def f_epsilon(param):
     """
     w = param[1][0]
     return np.identity(3, dtype = np.cfloat) * w**2 + np.sum(np.array(list(map(f_chi, *param))), axis = 0)
+
+def f_epsilon_vec(param):
+    """
+    Calculate the dielectric tensor \epsilon of the plasma.
+    \epsilon = identity_matrix + \sum_s \chi_s
+    Use the vectorized method to calculate chi tensor.
+    
+    Keyword arguments
+    -----------------
+    param: a 2D list, where param[:, j] = [n_j, w, kz, kp, wp_j, tz_j, tp_j, vthz_j, vthp_j, Omega_j, vz_j, method = 'pade']
+    
+    Return
+    ------
+    Return the dielectric tensor (times w^2 on top of Stix)
+    """
+    w = param[1][0]
+    return np.identity(3, dtype = np.cfloat) * w**2 + np.sum(np.array(list(map(f_chi_vec, *param))), axis = 0)
 
 def f_d(param):
     """
@@ -181,6 +322,26 @@ def f_d(param):
     nz_w = kz * cspeed
     nx_w = kp * cspeed
     return f_epsilon(param) + np.array([[-nz_w**2, 0, nx_w*nz_w], [0, -nx_w**2-nz_w**2, 0], [nz_w*nx_w, 0, -nx_w**2]])
+
+def f_d_vec(param):
+    """
+    Calculate the dispersion tensor of the plasma.
+    See Eq. 73 in 'Waves in plasmas' (Stix, 1992)
+     
+    Keyword arguments
+    -----------------
+    param: a 2D list, where param[:, j] = [n_j, w, kz, kp, wp_j, tz_j, tp_j, vthz_j, vthp_j, Omega_j, vz_j, method = 'pade']
+    
+    Return
+    ------
+    Return the dispersion tensor (times w^2 on top of Stix' expression).
+    """
+    w = param[1][0]
+    kz = param[2][0]
+    kp = param[3][0]
+    nz_w = kz * cspeed
+    nx_w = kp * cspeed
+    return f_epsilon_vec(param) + np.array([[-nz_w**2, 0, nx_w*nz_w], [0, -nx_w**2-nz_w**2, 0], [nz_w*nx_w, 0, -nx_w**2]])
 
 def dt_wrapper(wrel, kperp, kpar, betap, tetp = 1, method = 'pade', mratio=1836, n=10, aol=1/5000):
     """
