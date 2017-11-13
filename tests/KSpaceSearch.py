@@ -1,9 +1,11 @@
 import numpy as np
 import scipy.interpolate
+from py_vlasov.util import kzkp
 from py_vlasov.follow_parameter import generate_steps, solve_disp
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import os
+from math import ceil
 
 mpl.rcParams['axes.labelsize'] = 20
 mpl.rcParams['xtick.labelsize'] = 16
@@ -52,6 +54,8 @@ class KThetaScan:
         self.stop_condition = stop_condition
         self.maxGrowthRate = None
         self.maxGrowthK = None
+        self.maxGrowthKMag = None
+        self.maxGrowthTheta = None    
         self.savefig = savefig
         try: 
             self.diagnostic_dir = os.path.abspath(diagnostic_dir)
@@ -64,6 +68,7 @@ class KThetaScan:
         return self.getElectronDriftParamString()
     
     def getElectronDriftParamString(self):
+        betap = self.param[2]
         t_list = self.param[3]
         n_list = self.param[4]
         v_list = self.param[8]
@@ -72,12 +77,13 @@ class KThetaScan:
         thtc = t_list[2]/t_list[1]
         vcva = v_list[1]
         va2c2 = aol
-        annot = "$T_c/T_p = ${0:.2g}".format(tctp) + "\n"
-        annot += "$T_h/T_c = ${0:.2g}".format(thtc) + "\n"
+        annot = r"$\beta_p = ${0:.3g}".format(betap) + "\n"
         annot += "$v_c/v_A = ${0:.3g}".format(vcva) + "\n"
+        annot += "$T_c/T_p = ${0:.2g}".format(tctp) + "\n"
+        annot += "$T_h/T_c = ${0:.2g}".format(thtc) + "\n"
         annot += "$v_A/c = ${0:.2g}".format(aol)
         
-        title = "tctp={0:.2g}_thtc={1:.2g}_vcva={2:.3g}_vac={3:.2g}".format(tctp, thtc, vcva, aol)
+        title = "betap={0:.2g}_vcva={1:.3g}_tctp={2:.2g}_thtc={3:.2g}_vac={4:.2g}".format(betap, vcva, tctp, thtc, aol)
         return annot, title
         
     def guess(self, kz, kp):
@@ -119,7 +125,7 @@ class KThetaScan:
         self.param[1] = kp
 
 
-        freq = self.follow_k(guess, kmax, param,
+        freq = self.follow_k(guess, kmax, self.param,
                         lin_incrmt = self.lin_incrmt, 
                         log_incrmt = self.log_incrmt, 
                         incrmt_method = self.incrmt_method,
@@ -157,7 +163,7 @@ class KThetaScan:
         return grid[1:]
 
     def makeDiagnostics2D(self, theta_arr, kz_2d, kp_2d, wrel_2d):
-        mask = ~np.isnan(wrel_2d) & (wrel_2d.real > 0)
+        mask = ~np.isnan(wrel_2d)
         
         xmin, xmax = np.min(kz_2d[mask]), np.max(kz_2d[mask])
         ymin, ymax = np.min(kp_2d[mask]), np.max(kp_2d[mask])
@@ -169,7 +175,7 @@ class KThetaScan:
         y_2d = kp_2d
         z_2d = wrel_2d.real
         
-        mask = ~np.isnan(wrel_2d) & (wrel_2d.imag > 0)
+        mask = ~np.isnan(wrel_2d)
         wrel_real_i = scipy.interpolate.griddata((x_2d[mask].flatten(), y_2d[mask].flatten()), 
                                                  wrel_2d[mask].real.flatten(), (x_i, y_i), 
                                                  method='linear')
@@ -177,22 +183,28 @@ class KThetaScan:
         wrel_imag_i = scipy.interpolate.griddata((x_2d[mask].flatten(), y_2d[mask].flatten()), 
                                                  wrel_2d[mask].imag.flatten(), (x_i, y_i), 
                                                  method='cubic')
+        wrel_imag_i[np.isnan(wrel_imag_i)] = 0
         
         self.maxGrowthRate = np.max(wrel_imag_i[~np.isnan(wrel_imag_i)])
-        pos = np.where(wrel_imag_i == self.maxGrowthRate)
-        max_x = x_i[pos]
-        max_y = y_i[pos]
-        self.maxGrowthK = [max_x, max_y]
+        peak_pos = np.where(wrel_imag_i == self.maxGrowthRate)
+        peak_kz = x_i[peak_pos][-1]
+        peak_kp = y_i[peak_pos][-1]
+        self.maxGrowthK = [peak_kz, peak_kp]
+        self.maxGrowthKMag = np.sqrt(peak_kz**2 + peak_kp**2)
+        self.maxGrowthTheta = np.rad2deg(np.arctan(peak_kp/peak_kz))
+        # texts to annotate image & for naming image files
+        annot, title = self.getParamString()        
     
         z = np.ma.masked_where(np.isnan(wrel_real_i), wrel_real_i)
         plt.pcolormesh(x_edges, y_edges, 
                        z, vmin=1e-2, vmax=np.max(z), cmap = plt.cm.jet)
         plt.xlim([xmin, xmax])
         plt.ylim([ymin, ymax])
-        plt.plot([max_x], [max_y], 'k+')
+        plt.plot([peak_kz], [peak_kp], 'k+')
         plt.xlabel(r'$k_\parallel\rho_p$')
         plt.ylabel(r'$k_\perp \rho_p$')
         plt.title(r'$\omega_r/\Omega_p$')
+        plt.text(0.5 * xmax, 0.3 * ymax, annot)
         plt.colorbar()
         plt.tight_layout()
         fileName = os.path.join(self.diagnostic_dir, title + '_real_freq_contour.png')
@@ -202,9 +214,9 @@ class KThetaScan:
         
         if self.maxGrowthRate < 1e-6:
             return 
-        z = np.ma.masked_where(np.isnan(wrel_imag_i), wrel_imag_i)
+        z = np.ma.masked_where(wrel_imag_i <= 0, wrel_imag_i)
         vmax = np.max(z)
-        vmin = np.max([1e-5, vmax/500])
+        vmin = np.max([1e-6, vmax/500])
         pcm = plt.pcolormesh(x_edges, y_edges, z, 
                              vmin=vmin, vmax=vmax, cmap = plt.cm.jet, 
                              norm=mpl.colors.LogNorm(vmin=vmin, vmax=vmax))
@@ -213,9 +225,10 @@ class KThetaScan:
         contour_vals = [10**(max_contour-1), 10**max_contour]
         CS = plt.contour(x_grid, y_grid, z, contour_vals, colors = 'k')
         plt.clabel(CS, inline=1, fontsize=10, fmt='%.2g')
-        plt.xlim([0, np.max(kz_2d)])
-        plt.ylim([0, np.max(kp_2d)])
-        plt.plot(max_x, max_y, 'k+')
+        xmax, ymax = np.max(kz_2d), np.max(kp_2d)
+        plt.xlim([0, xmax])
+        plt.ylim([0, ymax])
+        plt.plot([peak_kz], [peak_kp], 'k+')
         # 45 degree reference line
         plt.plot([0, 1], [0, 1], 'k:')
         plt.plot([0, 5], [0, 5 * np.tan(np.deg2rad(60))], 'k:')
@@ -226,6 +239,7 @@ class KThetaScan:
         plt.ylabel(r'$k_\perp \rho_p$')
         plt.title(r'$\omega_i/\Omega_p$')
         plt.axvline(0, color = 'k')
+        plt.text(0.5 * xmax, 0.3 * ymax, annot)
         plt.colorbar(pcm)
         plt.tight_layout()
         fileName = os.path.join(self.diagnostic_dir, title + '_growth_rate_contour.png')
@@ -249,7 +263,7 @@ class KThetaScan:
                 plt.plot(k_2d[i, :], wrel_arr.real)
         not_nan = ~np.isnan(wrel_arr)
         wrel_real_pos = 0.2 * np.max(wrel_arr[not_nan].real) + 0.8 * np.min(wrel_arr[not_nan].real)
-        wrel_imag_pos = 0.8 * np.max(wrel_arr[not_nan].imag) + 0.2* np.min(wrel_arr[not_nan].imag)
+        wrel_imag_pos = 0.5 * np.max(wrel_arr[not_nan].imag) + 0.5* np.min(wrel_arr[not_nan].imag)
         k_real_pos = 0.3 * k_2d[0, 0] + 0.7 * k_2d[0, -1]
         k_imag_pos = 0.8 * k_2d[0, 0] + 0.2 * k_2d[0, -1]
         annot, title = self.getParamString()
@@ -275,8 +289,10 @@ class KThetaScan:
         gamma_max = np.max(wrel_2d[mask].imag)
         if gamma_max > 0:
             plt.ylim([-1e-3, 2 * gamma_max])
+            plt.text(k_imag_pos, -1e-3, annot)
+        else:
+            plt.text(k_imag_pos, wrel_imag_pos, annot)
         plt.legend(fontsize = 10, frameon=False)
-        plt.text(k_imag_pos, wrel_imag_pos, annot)
         plt.tight_layout()
         fileName = os.path.join(self.diagnostic_dir, title + '_growth_rate.png')
         if self.savefig:
