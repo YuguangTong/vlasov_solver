@@ -35,6 +35,7 @@ class KThetaScan:
                  log_incrmt = 0.05, 
                  stop_condition = None,
                  diagnostic_dir = '.', 
+                 gridNum = 300,
                  savefig = False):
         """
         Constructor
@@ -52,6 +53,7 @@ class KThetaScan:
         self.lin_incrmt = lin_incrmt
         self.log_incrmt = log_incrmt
         self.stop_condition = stop_condition
+        self.gridNum = gridNum
         self.maxGrowthRate = None
         self.maxGrowthK = None
         self.maxGrowthKMag = None
@@ -110,12 +112,13 @@ class KThetaScan:
         guess = seed_freq
         for k in k_list:
             kz, kp = k * kz_k, k * kp_k
-            guess = solve_disp(guess, kz, kp, beta, t_list, a_list,
+            wrel = solve_disp(guess, kz, kp, beta, t_list, a_list,
                                n_list, q_list, m_list, v_list,
                                n, method, aol, pol)
-            if stop_condition and stop_condition(guess):
+            if stop_condition and stop_condition(guess, wrel):
                 break
-            freq_lst.append(guess)
+            freq_lst.append(wrel)
+            guess = wrel
         return freq_lst
 
     def fixThetaScan(self, theta, kmin, kmax):
@@ -168,7 +171,7 @@ class KThetaScan:
         xmin, xmax = np.min(kz_2d[mask]), np.max(kz_2d[mask])
         ymin, ymax = np.min(kp_2d[mask]), np.max(kp_2d[mask])
 
-        x_edges, y_edges = np.linspace(xmin, xmax, 100), np.linspace(ymin, ymax, 100)
+        x_edges, y_edges = np.linspace(xmin, xmax, self.gridNum), np.linspace(ymin, ymax, self.gridNum)
         x_grid, y_grid = self.edges2grid(x_edges), self.edges2grid(y_edges)
         x_i, y_i = np.meshgrid(x_grid, y_grid)
         x_2d = kz_2d
@@ -212,6 +215,7 @@ class KThetaScan:
             plt.savefig(fileName, dpi = 200)
         plt.show()  
         
+        # Don't make growth rate plot if growth rate is too small
         if self.maxGrowthRate < 1e-6:
             return 
         z = np.ma.masked_where(wrel_imag_i <= 0, wrel_imag_i)
