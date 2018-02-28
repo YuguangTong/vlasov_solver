@@ -36,7 +36,8 @@ class KThetaScan:
                  stop_condition = None,
                  diagnostic_dir = '.', 
                  gridNum = 300,
-                 savefig = False):
+                 savefig = False, 
+                 makeplot = False):
         """
         Constructor
         
@@ -59,6 +60,7 @@ class KThetaScan:
         self.maxGrowthKMag = None
         self.maxGrowthTheta = None    
         self.savefig = savefig
+        self.makeplot = makeplot
         try: 
             self.diagnostic_dir = os.path.abspath(diagnostic_dir)
         except Exception:
@@ -165,7 +167,7 @@ class KThetaScan:
         grid = (np.roll(edges, 1) + edges)/2
         return grid[1:]
 
-    def makeDiagnostics2D(self, theta_arr, kz_2d, kp_2d, wrel_2d):
+    def makeDiagnostics2D(self, theta_arr, kz_2d, kp_2d, wrel_2d, makeplot = False):
         mask = ~np.isnan(wrel_2d)
         
         xmin, xmax = np.min(kz_2d[mask]), np.max(kz_2d[mask])
@@ -199,106 +201,109 @@ class KThetaScan:
         annot, title = self.getParamString()        
     
         z = np.ma.masked_where(np.isnan(wrel_real_i), wrel_real_i)
-        plt.pcolormesh(x_edges, y_edges, 
-                       z, vmin=1e-2, vmax=np.max(z), cmap = plt.cm.jet)
-        plt.xlim([xmin, xmax])
-        plt.ylim([ymin, ymax])
-        plt.plot([peak_kz], [peak_kp], 'k+')
-        plt.xlabel(r'$k_\parallel\rho_p$')
-        plt.ylabel(r'$k_\perp \rho_p$')
-        plt.title(r'$\omega_r/\Omega_p$')
-        plt.text(0.5 * xmax, 0.3 * ymax, annot)
-        plt.colorbar()
-        plt.tight_layout()
-        fileName = os.path.join(self.diagnostic_dir, title + '_real_freq_contour.png')
-        if self.savefig:
-            plt.savefig(fileName, dpi = 200)
-        plt.show()  
+        if makeplot or self.makeplot:
+            plt.pcolormesh(x_edges, y_edges, 
+                           z, vmin=1e-2, vmax=np.max(z), cmap = plt.cm.jet)
+            plt.xlim([xmin, xmax])
+            plt.ylim([ymin, ymax])
+            plt.plot([peak_kz], [peak_kp], 'k+')
+            plt.xlabel(r'$k_\parallel\rho_p$')
+            plt.ylabel(r'$k_\perp \rho_p$')
+            plt.title(r'$\omega_r/\Omega_p$')
+            plt.text(0.5 * xmax, 0.3 * ymax, annot)
+            plt.colorbar()
+            plt.tight_layout()
+            fileName = os.path.join(self.diagnostic_dir, title + '_real_freq_contour.png')
+            if self.savefig:
+                plt.savefig(fileName, dpi = 200)
+            plt.show()  
         
-        # Don't make growth rate plot if growth rate is too small
-        if self.maxGrowthRate < 1e-6:
-            return 
-        z = np.ma.masked_where(wrel_imag_i <= 0, wrel_imag_i)
-        vmax = np.max(z)
-        vmin = np.max([1e-6, vmax/500])
-        pcm = plt.pcolormesh(x_edges, y_edges, z, 
-                             vmin=vmin, vmax=vmax, cmap = plt.cm.jet, 
-                             norm=mpl.colors.LogNorm(vmin=vmin, vmax=vmax))
-        # we only make two contour lines
-        max_contour = np.floor(np.log(self.maxGrowthRate))
-        contour_vals = [10**(max_contour-1), 10**max_contour]
-        CS = plt.contour(x_grid, y_grid, z, contour_vals, colors = 'k')
-        plt.clabel(CS, inline=1, fontsize=10, fmt='%.2g')
-        xmax, ymax = np.max(kz_2d), np.max(kp_2d)
-        plt.xlim([0, xmax])
-        plt.ylim([0, ymax])
-        plt.plot([peak_kz], [peak_kp], 'k+')
-        # 45 degree reference line
-        plt.plot([0, 1], [0, 1], 'k:')
-        plt.plot([0, 5], [0, 5 * np.tan(np.deg2rad(60))], 'k:')
-        plt.plot([0, 10], [0, 10 * np.tan(np.deg2rad(80))], 'k:')
-        plt.plot([0, 10], [0, 10 * np.tan(np.deg2rad(85))], 'k:')  
-        plt.plot([0, 10], [0, 10 * np.tan(np.deg2rad(89))], 'k:')        
-        plt.xlabel(r'$k_\parallel\rho_p$')
-        plt.ylabel(r'$k_\perp \rho_p$')
-        plt.title(r'$\omega_i/\Omega_p$')
-        plt.axvline(0, color = 'k')
-        plt.text(0.5 * xmax, 0.3 * ymax, annot)
-        plt.colorbar(pcm)
-        plt.tight_layout()
-        fileName = os.path.join(self.diagnostic_dir, title + '_growth_rate_contour.png')
-        if self.savefig:
-            plt.savefig(fileName, dpi = 200)
-        plt.show()
+            # Don't make growth rate plot if growth rate is too small
+            if self.maxGrowthRate < 1e-6:
+                return 
+            z = np.ma.masked_where(wrel_imag_i <= 0, wrel_imag_i)
+            vmax = np.max(z)
+            vmin = np.max([1e-6, vmax/500])
+            pcm = plt.pcolormesh(x_edges, y_edges, z, 
+                                 vmin=vmin, vmax=vmax, cmap = plt.cm.jet, 
+                                 norm=mpl.colors.LogNorm(vmin=vmin, vmax=vmax))
+            # we only make two contour lines
+            max_contour = np.floor(np.log(self.maxGrowthRate))
+            contour_vals = [10**(max_contour-1), 10**max_contour]
+            CS = plt.contour(x_grid, y_grid, z, contour_vals, colors = 'k')
+            plt.clabel(CS, inline=1, fontsize=10, fmt='%.2g')
+            xmax, ymax = np.max(kz_2d), np.max(kp_2d)
+            plt.xlim([0, xmax])
+            plt.ylim([0, ymax])
+            plt.plot([peak_kz], [peak_kp], 'k+')
+            # 45 degree reference line
+            plt.plot([0, 1], [0, 1], 'k:')
+            plt.plot([0, 5], [0, 5 * np.tan(np.deg2rad(60))], 'k:')
+            plt.plot([0, 10], [0, 10 * np.tan(np.deg2rad(80))], 'k:')
+            plt.plot([0, 10], [0, 10 * np.tan(np.deg2rad(85))], 'k:')  
+            plt.plot([0, 10], [0, 10 * np.tan(np.deg2rad(89))], 'k:')        
+            plt.xlabel(r'$k_\parallel\rho_p$')
+            plt.ylabel(r'$k_\perp \rho_p$')
+            plt.title(r'$\omega_i/\Omega_p$')
+            plt.axvline(0, color = 'k')
+            plt.text(0.5 * xmax, 0.3 * ymax, annot)
+            plt.colorbar(pcm)
+            plt.tight_layout()
+            fileName = os.path.join(self.diagnostic_dir, title + '_growth_rate_contour.png')
+            if self.savefig:
+                plt.savefig(fileName, dpi = 200)
+            plt.show()
         
         
-    def makeDiagnostics1D(self, theta_arr, k_2d, wrel_2d):
+    def makeDiagnostics1D(self, theta_arr, k_2d, wrel_2d, makeplot=False):
         """
         Produce diagnostics plots:
             1, real freq vs wave number.
             2, imaginary freq vs wave number.
         """
-        # at most label 5 curves
-        n = ceil(len(theta_arr)/5)
-        for i, wrel_arr in enumerate(wrel_2d):
-            if i % n == 0:
-                plt.plot(k_2d[i, :], wrel_arr.real, label = '{0:.3g}'.format(theta_arr[i]))
-            else:
-                plt.plot(k_2d[i, :], wrel_arr.real)
-        not_nan = ~np.isnan(wrel_arr)
-        wrel_real_pos = 0.2 * np.max(wrel_arr[not_nan].real) + 0.8 * np.min(wrel_arr[not_nan].real)
-        wrel_imag_pos = 0.5 * np.max(wrel_arr[not_nan].imag) + 0.5* np.min(wrel_arr[not_nan].imag)
-        k_real_pos = 0.3 * k_2d[0, 0] + 0.7 * k_2d[0, -1]
-        k_imag_pos = 0.8 * k_2d[0, 0] + 0.2 * k_2d[0, -1]
-        annot, title = self.getParamString()
-        print(title)
-        plt.xlabel(r'$k\rho_p$')
-        plt.ylabel(r'$\omega_r/\Omega_p$')
-        plt.legend(fontsize = 10, frameon=False)
-        plt.text(k_real_pos, wrel_real_pos, annot)
-        plt.tight_layout()
-        fileName = os.path.join(self.diagnostic_dir, title + '_real_freq.png')
-        if self.savefig:
-            plt.savefig(fileName, dpi = 100)
-        plt.show()
+        if makeplot or self.makeplot:
+            # at most label 5 curves
+            n = ceil(len(theta_arr)/5)
+            for i, wrel_arr in enumerate(wrel_2d):
+                if i % n == 0:
+                    plt.plot(k_2d[i, :], wrel_arr.real, label = '{0:.3g}'.format(theta_arr[i]))
+                else:
+                    plt.plot(k_2d[i, :], wrel_arr.real)
+            not_nan = ~np.isnan(wrel_arr)
+            wrel_real_pos = 0.2 * np.max(wrel_arr[not_nan].real) + 0.8 * np.min(wrel_arr[not_nan].real)
+            wrel_imag_pos = 0.5 * np.max(wrel_arr[not_nan].imag) + 0.5* np.min(wrel_arr[not_nan].imag)
+            k_real_pos = 0.3 * k_2d[0, 0] + 0.7 * k_2d[0, -1]
+            k_imag_pos = 0.8 * k_2d[0, 0] + 0.2 * k_2d[0, -1]
+            annot, title = self.getParamString()
         
-        for i, wrel_arr in enumerate(wrel_2d):
-            if i % n == 0:
-                plt.plot(k_2d[i, :], wrel_arr.imag, label = '{0:.3g}'.format(theta_arr[i]))
+
+            plt.xlabel(r'$k\rho_p$')
+            plt.ylabel(r'$\omega_r/\Omega_p$')
+            plt.legend(fontsize = 10, frameon=False)
+            plt.text(k_real_pos, wrel_real_pos, annot)
+            plt.tight_layout()
+            fileName = os.path.join(self.diagnostic_dir, title + '_real_freq.png')
+            if self.savefig:
+                plt.savefig(fileName, dpi = 100)
+            plt.show()
+
+            for i, wrel_arr in enumerate(wrel_2d):
+                if i % n == 0:
+                    plt.plot(k_2d[i, :], wrel_arr.imag, label = '{0:.3g}'.format(theta_arr[i]))
+                else:
+                    plt.plot(k_2d[i, :], wrel_arr.imag)
+            plt.xlabel(r'$k\rho_p$')
+            plt.ylabel(r'$\omega_i/\Omega_p$')
+            mask = ~np.isnan(wrel_2d)
+            gamma_max = np.max(wrel_2d[mask].imag)
+            if gamma_max > 0:
+                plt.ylim([-1e-3, 2 * gamma_max])
+                plt.text(k_imag_pos, -1e-3, annot)
             else:
-                plt.plot(k_2d[i, :], wrel_arr.imag)
-        plt.xlabel(r'$k\rho_p$')
-        plt.ylabel(r'$\omega_i/\Omega_p$')
-        mask = ~np.isnan(wrel_2d)
-        gamma_max = np.max(wrel_2d[mask].imag)
-        if gamma_max > 0:
-            plt.ylim([-1e-3, 2 * gamma_max])
-            plt.text(k_imag_pos, -1e-3, annot)
-        else:
-            plt.text(k_imag_pos, wrel_imag_pos, annot)
-        plt.legend(fontsize = 10, frameon=False)
-        plt.tight_layout()
-        fileName = os.path.join(self.diagnostic_dir, title + '_growth_rate.png')
-        if self.savefig:
-            plt.savefig(fileName, dpi = 100) 
-        plt.show()
+                plt.text(k_imag_pos, wrel_imag_pos, annot)
+            plt.legend(fontsize = 10, frameon=False)
+            plt.tight_layout()
+            fileName = os.path.join(self.diagnostic_dir, title + '_growth_rate.png')
+            if self.savefig:
+                plt.savefig(fileName, dpi = 100) 
+            plt.show()

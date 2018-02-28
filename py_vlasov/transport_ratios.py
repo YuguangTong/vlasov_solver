@@ -58,7 +58,8 @@ def input_gen(wrel, kperp, kpar, betap, tetp = 1, method = 'pade', mratio=1836, 
     
     inp = [proton, electron]
     return inp
-
+    
+    
 def transport_ratios(inp, print_result = False):
     """
     Parameters
