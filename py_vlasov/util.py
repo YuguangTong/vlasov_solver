@@ -61,7 +61,13 @@ def zp(z):
     
     Return the value of Zp(z)
     """
-    return 1.7724538509055159j * scipy.special.wofz(z)
+    ret = 1.7724538509055159j * scipy.special.wofz(z)
+    # TODO(ygtong): figure out why wofz failed for some values e.g. (90-190j).
+    if np.isnan(ret):
+        ret = pade(z)
+#         print('scipy wofz failed for argument {0:.3g}'.format(z))
+#         print('switch to pade approx')
+    return ret
     
 def zpd(x):
     """

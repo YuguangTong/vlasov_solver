@@ -178,7 +178,8 @@ def parallel_wrapper(wrel, kpar, kperp, betap, t_list, a_list,
     elif pol == 'L' or pol == 'l':
         return l_wave_eqn(param)
     elif pol == 'S' or pol == 's':
-        return static_wave_eqn(param)
+        ret = static_wave_eqn(param)
+        return ret
     else:
         raise VlasovException('Not a proper wave mode. Choose between r, l and s.')
 
@@ -226,9 +227,10 @@ def disp_det(wrel, kpar, kperp, betap, t_list, a_list,
     """
 
     if kperp == 0:
-        return  parallel_wrapper(wrel, kpar, kperp, betap, t_list, a_list,
-                                 n_list, q_list, m_list, v_list, n = n,
-                                 method = method, aol=aol, pol=pol)
+        ret =  parallel_wrapper(wrel, kpar, kperp, betap, t_list, a_list,
+                                n_list, q_list, m_list, v_list, n = n,
+                                method = method, aol=aol, pol=pol)
+        return ret
     else:
         return oblique_wrapper(wrel, kpar, kperp, betap, t_list, a_list,
                                n_list, q_list, m_list, v_list, n = n,

@@ -269,9 +269,14 @@ def follow_k(seed_freq, target_value, param, pol='r', show_plot=False,
     guess = seed_freq
     for k in k_list:
         kz, kp = k * kz_k, k * kp_k
-        guess = solve_disp(guess, kz, kp, beta, t_list, a_list,
-                           n_list, q_list, m_list, v_list,
-                           n, method, aol, pol)
+        try:
+            guess = solve_disp(guess, kz, kp, beta, t_list, a_list,
+                               n_list, q_list, m_list, v_list,
+                               n, method, aol, pol)
+        except Exception:
+            print('kz = {0:.3g}'.format(kz))
+            print('kp = {0:.3g}'.format(kp))
+            print('guess = {0:.3g}'.format(guess))
         freq_lst.append(guess)
     if show_plot:
         plt.plot(k_list, np.abs(np.real(freq_lst)), 'o-', markersize= 2)
